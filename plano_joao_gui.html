@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plano Joao gui — Dieta & Treino</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f0f0f;
+  --bg2: #161616;
+  --bg3: #1e1e1e;
+  --bg4: #252525;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.14);
+  --text: #f0f0f0;
+  --text2: #aaa;
+  --text3: #666;
+  --green: #a8e063;
+  --green2: #6fcf4a;
+  --green-bg: rgba(168,224,99,0.1);
+  --green-border: rgba(168,224,99,0.25);
+  --blue: #64b5f6;
+  --blue-bg: rgba(100,181,246,0.1);
+  --amber: #ffb74d;
+  --amber-bg: rgba(255,183,77,0.1);
+  --red: #ef9a9a;
+  --red-bg: rgba(239,154,154,0.1);
+  --purple: #ce93d8;
+  --purple-bg: rgba(206,147,216,0.1);
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.6;min-height:100vh}
+
+/* HEADER */
+.hero{
+  position:relative;
+  background:var(--bg2);
+  border-bottom:1px solid var(--border);
+  padding:40px 24px 32px;
+  overflow:hidden;
+}
+.hero::before{
+  content:'';
+  position:absolute;
+  top:-80px;right:-80px;
+  width:300px;height:300px;
+  background:radial-gradient(circle,rgba(168,224,99,0.12) 0%,transparent 70%);
+  pointer-events:none;
+}
+.hero-tag{font-family:'DM Mono',monospace;font-size:11px;color:var(--green);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px}
+.hero-name{font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:.04em;line-height:1;color:#fff;margin-bottom:6px}
+.hero-sub{font-size:14px;color:var(--text2)}
+.hero-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.chip{font-size:12px;font-weight:500;padding:5px 12px;border-radius:20px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2)}
+.chip.green{border-color:var(--green-border);background:var(--green-bg);color:var(--green)}
+.chip.blue{border-color:rgba(100,181,246,.25);background:var(--blue-bg);color:var(--blue)}
+
+/* NAV */
+.nav{
+  position:sticky;top:0;z-index:100;
+  background:rgba(15,15,15,0.92);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  padding:0 24px;
+  display:flex;gap:0;overflow-x:auto;
+}
+.nav::-webkit-scrollbar{display:none}
+.nav-btn{
+  font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;
+  color:var(--text3);padding:14px 18px;
+  border:none;background:none;cursor:pointer;
+  border-bottom:2px solid transparent;
+  white-space:nowrap;transition:all .2s;
+}
+.nav-btn:hover{color:var(--text2)}
+.nav-btn.active{color:var(--green);border-bottom-color:var(--green)}
+
+/* MAIN */
+.main{max-width:800px;margin:0 auto;padding:28px 20px 60px}
+.section{display:none}.section.active{display:block}
+
+/* SECTION HEADER */
+.sec-title{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:.04em;color:#fff;margin-bottom:4px}
+.sec-sub{font-size:13px;color:var(--text2);margin-bottom:24px}
+
+/* MACRO CARDS */
+.macro-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.macro-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px}
+.macro-l{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.macro-v{font-size:22px;font-weight:600;color:#fff}
+.macro-u{font-size:11px;color:var(--text3);font-weight:400}
+
+/* ALERT */
+.alert{font-size:13px;border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:12px;border-left:3px solid}
+.alert-green{background:var(--green-bg);border-color:var(--green);color:#c8f090}
+.alert-blue{background:var(--blue-bg);border-color:var(--blue);color:#90caf9}
+.alert-amber{background:var(--amber-bg);border-color:var(--amber);color:#ffcc80}
+.alert-purple{background:var(--purple-bg);border-color:var(--purple);color:#e1bee7}
+.alert-red{background:var(--red-bg);border-color:var(--red);color:#ffcdd2}
+
+/* MEAL CARDS */
+.meal-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:hidden}
+.meal-head{padding:14px 16px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.meal-head-left{flex:1}
+.meal-time{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
+.meal-title{font-size:15px;font-weight:600;color:#fff}
+.meal-kcal{font-family:'DM Mono',monospace;font-size:12px;font-weight:500;white-space:nowrap;padding:3px 10px;border-radius:20px;background:var(--bg4);color:var(--green);border:1px solid var(--green-border)}
+.meal-body{border-top:1px solid var(--border)}
+.meal-opt{padding:10px 16px;border-bottom:1px solid var(--border)}
+.meal-opt:last-child{border-bottom:none}
+.meal-opt-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:6px}
+.pills{display:flex;flex-wrap:wrap;gap:5px}
+.pill{font-size:12px;background:var(--bg3);border:1px solid var(--border2);border-radius:20px;padding:3px 10px;color:var(--text2)}
+.meal-tip{padding:9px 16px;background:var(--bg3);font-size:12px;color:var(--text3);border-top:1px solid var(--border);font-style:italic}
+
+/* WATER GRID */
+.water-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.wc{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px}
+.wc-icon{font-size:18px;margin-bottom:6px}
+.wc-t{font-size:13px;font-weight:600;color:#fff;margin-bottom:3px}
+.wc-d{font-size:12px;color:var(--text2);line-height:1.5}
+
+/* VARIATION GRID */
+.var-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:20px}
+.var-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px}
+.var-card-t{font-size:12px;font-weight:600;color:var(--green);margin-bottom:7px;text-transform:uppercase;letter-spacing:.04em}
+.var-sub{font-size:11px;color:var(--text3);margin-bottom:8px}
+
+/* TREINO */
+.treino-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:10px;overflow:hidden}
+.treino-head{padding:14px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;transition:background .15s}
+.treino-head:hover{background:var(--bg3)}
+.treino-head-left{flex:1}
+.treino-day-label{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px}
+.treino-name{font-size:15px;font-weight:600;color:#fff}
+.treino-right{display:flex;align-items:center;gap:10px}
+.treino-badge{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500;white-space:nowrap}
+.badge-jj{background:rgba(255,183,77,.12);color:#ffcc80;border:1px solid rgba(255,183,77,.25)}
+.badge-cardio{background:rgba(100,181,246,.12);color:#90caf9;border:1px solid rgba(100,181,246,.25)}
+.chevron{color:var(--text3);font-size:18px;transition:transform .25s;line-height:1}
+.treino-body{display:none;border-top:1px solid var(--border);padding:14px 16px}
+.treino-body.open{display:block}
+.ex-table{width:100%;border-collapse:collapse;margin-bottom:10px}
+.ex-table th{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;text-align:left;padding:6px 0 6px;border-bottom:1px solid var(--border)}
+.ex-table td{font-size:13px;color:var(--text);padding:8px 0;border-bottom:1px solid var(--border)}
+.ex-table tr:last-child td{border-bottom:none}
+.ex-table td:not(:first-child){color:var(--text2);text-align:center;white-space:nowrap;width:64px}
+.cardio-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 13px;font-size:12px;color:var(--text2)}
+.cardio-box span{color:var(--blue);font-weight:600}
+
+/* FRUIT TABLE */
+.fruit-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+.fruit-item{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;font-size:12px;color:var(--text2)}
+
+/* TIMELINE/DAY VIEW */
+.day-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.day-tab{font-size:12px;font-weight:500;padding:5px 14px;border-radius:20px;border:1px solid var(--border2);cursor:pointer;background:var(--bg3);color:var(--text3);transition:all .15s}
+.day-tab.active{background:var(--green);color:#0f0f0f;border-color:var(--green)}
+.day-panel{display:none}.day-panel.active{display:block}
+
+/* PROGRESS */
+.progress-wrap{margin-bottom:20px}
+.progress-bar-bg{background:var(--bg3);border-radius:20px;height:8px;overflow:hidden;margin-top:6px}
+.progress-bar-fill{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--green2),var(--green));transition:width .6s ease}
+.progress-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-top:4px}
+
+/* FOOTER */
+.footer{text-align:center;padding:24px;font-size:12px;color:var(--text3);border-top:1px solid var(--border)}
+
+@media(max-width:600px){
+  .macro-grid{grid-template-columns:repeat(2,1fr)}
+  .water-grid{grid-template-columns:repeat(2,1fr)}
+  .var-grid{grid-template-columns:1fr}
+  .fruit-grid{grid-template-columns:repeat(2,1fr)}
+  .hero-name{font-size:38px}
+}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">Plano Personalizado</div>
+  <div class="hero-name">JOAO GUI</div>
+  <div class="hero-sub">Dieta + Treino + Hidratação · Adaptado à grade da UnB</div>
+  <div class="hero-chips">
+    <span class="chip green">Meta: 73~74kg</span>
+    <span class="chip blue">Atual: 81kg · 1,70m</span>
+    <span class="chip">6x treino/semana</span>
+    <span class="chip">JJ Seg · Qua · Sex</span>
+    <span class="chip">~1850 kcal/dia</span>
+  </div>
+
+  <div class="progress-wrap" style="margin-top:20px">
+    <div style="font-size:12px;color:var(--text2);">Progresso até a meta <span style="color:var(--green);font-weight:600">0 / 7kg</span></div>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:0%" id="prog-bar"></div></div>
+    <div class="progress-labels"><span>81kg (início)</span><span>73~74kg (meta)</span></div>
+    <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+      <input type="number" id="peso-input" placeholder="Peso atual (kg)" step="0.1" min="60" max="90"
+        style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:6px 10px;font-size:13px;color:var(--text);width:160px;font-family:'DM Sans',sans-serif">
+      <button onclick="updateProgress()" style="background:var(--green);color:#0f0f0f;border:none;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Atualizar</button>
+    </div>
+  </div>
+</div>
+
+<nav class="nav">
+  <button class="nav-btn active" onclick="showSection('alimentacao',this)">Alimentação</button>
+  <button class="nav-btn" onclick="showSection('agua',this)">Água</button>
+  <button class="nav-btn" onclick="showSection('variacoes',this)">Variações</button>
+  <button class="nav-btn" onclick="showSection('treino',this)">Treino</button>
+  <button class="nav-btn" onclick="showSection('semana',this)">Semana</button>
+</nav>
+
+<div class="main">
+
+<!-- ===================== ALIMENTAÇÃO ===================== -->
+<div class="section active" id="sec-alimentacao">
+  <div class="sec-title">Alimentação</div>
+  <div class="sec-sub">~1850 kcal/dia · déficit calculado para perda de gordura preservando músculo</div>
+
+  <div class="macro-grid">
+    <div class="macro-card"><div class="macro-l">Calorias</div><div class="macro-v">1850<span class="macro-u"> kcal</span></div></div>
+    <div class="macro-card"><div class="macro-l">Proteína</div><div class="macro-v">155<span class="macro-u"> g</span></div></div>
+    <div class="macro-card"><div class="macro-l">Carboidrato</div><div class="macro-v">215<span class="macro-u"> g</span></div></div>
+    <div class="macro-card"><div class="macro-l">Gordura</div><div class="macro-v">30<span class="macro-u"> g</span></div></div>
+  </div>
+
+  <div class="alert alert-green">Déficit de ~350kcal/dia → perda estimada de 1,2~1,5kg/mês. Meta de 73~74kg em aproximadamente 4 meses.</div>
+  <div class="alert alert-blue">Chiclete sem açúcar: liberado! Use entre refeições para controlar a fome. Limite de 3~5 por dia.</div>
+
+  <div style="margin-bottom:8px;margin-top:20px">
+    <div class="day-tabs" id="meal-tabs">
+      <div class="day-tab active" onclick="showMeals('cedo',this)">Dias cedo (Seg/Qua/Qui)</div>
+      <div class="day-tab" onclick="showMeals('tarde',this)">Ter/Sex (tarde)</div>
+      <div class="day-tab" onclick="showMeals('sabado',this)">Sáb (livre)</div>
+    </div>
+  </div>
+
+  <div class="day-panel active" id="meals-cedo">
+
+    <div class="meal-card">
+      <div class="meal-head">
+        <div class="meal-head-left"><div class="meal-time">Ao acordar · ~06h30</div><div class="meal-title">Hidratação inicial</div></div>
+        <span class="meal-kcal">0 kcal</span>
+      </div>
+      <div class="meal-body">
+        <div class="meal-opt"><div class="pills"><span class="pill">300~500ml água</span><span class="pill">Café puro (opcional)</span></div></div>
+      </div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-head">
+        <div class="meal-head-left"><div class="meal-time">Café da manhã · ~07h</div><div class="meal-title">Rápido — antes das aulas das 08h</div></div>
+        <span class="meal-kcal">~430 kcal</span>
+      </div>
+      <div class="meal-body">
+        <div class="meal-opt"><div class="meal-opt-label">Opção 1 — Shake (recomendado — 2 min)</div><div class="pills"><span class="pill">150g banana</span><span class="pill">200ml leite desnatado</span><span class="pill">30g whey</span><span class="pill">20g aveia</span></div></div>
+        <div class="meal-opt"><div class="meal-opt-label">Opção 2 — Pão com ovos</div><div class="pills"><span class="pill">1 pão francês (50g)</span><span class="pill">3 ovos mexidos</span><span class="pill">1 fruta</span></div></div>
+      </div>
+      <div class="meal-tip">💡 Prepare o shake na garrafa shaker à noite se quiser ser ainda mais rápido.</div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-head">
+        <div class="meal-head-left"><div class="meal-time">Lanche · ~11h30</div><div class="meal-title">Intervalo na faculdade — levar de casa</div></div>
+        <span class="meal-kcal">~280 kcal</span>
+      </div>
+      <div class="meal-body">
+        <div class="meal-opt"><div class="meal-opt-label">Opção 1 — pote/garrafinha</div><div class="pills"><span class="pill">200g iogurte zero gordura</span><span class="pill">30g whey</span><span class="pill">1 fruta</span></div></div>
+        <div class="meal-opt"><div class="meal-opt-label">Opção 2 — lanche sólido</div><div class="pills"><span class="pill">1 pão francês</span><span class="pill">20g queijo</span><span class="pill">100g frango desfiado</span></div></div>
+        <div class="meal-opt"><div class="meal-opt-label">Opção 3 — overnight oats</div><div class="pills"><span class="pill">40g aveia</span><span class="pill">30g whey</span><span class="pill">150ml leite desnatado</span><span class="pill">1 fruta (preparar na noite anterior)</span></div></div>
+      </div>
+      <div class="meal-tip">💡 Iogurte+whey em pote fechado dura 3~4h na mochila. Overnight oats é ótimo para levar pronto.</div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-head">
+        <div class="meal-head-left"><div class="meal-time">Almoço · ~14h (Seg/Qua) ou ~12h30 (Qui)</div><div class="meal-title">Refeição principal</div></div>
+        <span class="meal-kcal">~580 kcal</span>
+      </div>
+      <div class="meal-body">
+        <div class="meal-opt"><div class="meal-opt-label">Carboidrato — escolha 1</div><div class="pills"><span class="pill">Arroz 150g + Feijão 100g</span><span class="pill">Macarrão 170g</span><span class="pill">Batata inglesa 200g</span><span class="pill">Batata doce 180g</span><span class="pill">Mandioca 210g</span><span class="pill">Cuscuz 220g</span></div></div>
+        <div class="meal-opt"><div class="meal-opt-label">Proteína — escolha 1</div><div class="pills"><span class="pill">Frango grelhado 150g</span><span class="pill">Carne bovina 150g</span><span class="pill">Filé de peixe 150g</span><span class="pill">Lombo suíno 150g</span><span class="pill">Proteína de soja 200g</span></div></div>
+        <div class="meal-opt"><div class="meal-opt-label">Salada — à vontade</div><div class="pills"><span class="pill">Folhas + legumes crus/cozidos (mín. 100g)</span></div></div>
+        <div class="meal-opt"><div class="meal-opt-label">Opção rápida — hambúrguer caseiro</div><div class="pills"><span class="pill">Pão hambúrguer 50g</span><span class="pill">150g patinho moído</span><span class="pill">20g queijo</span><span class="pill">Alface/tomate à gosto</span><span class="pill">1 fruta (sobremesa)</span></div></div>
+      </div>
+      <div class="meal-tip">💡 Seg/Qua: leve marmita. Qui tem intervalo 12h~14h — aproveite para comer em casa.</div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-head">
+        <div class="meal-head-left"><div class="meal-time">Pré-treino · ~45min antes</div><div class="meal-title">Antes do treino ou jiu-jitsu</div></div>
+        <span class="meal-kcal">~200 kcal</span>
+      </div>
+      <div class="meal-body">
+        <div class="meal-opt"><div class="meal-opt-label">Dias com JJ às 17h → comer ~16h15</div><div class="pills"><span class="pill">40g aveia</span><span class="pill">30g whey</span><span class="pill">1 fruta</span></div></div>
+        <div class="meal-opt"><div class="meal-opt-label">Alternativa</div><div class="pills"><span class="pill">1 pão francês</span><span class="pill">30g whey com água</span></div></div>
+      </div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-head">
+        <div class="meal-head-left"><div class="meal-time">Jantar · pós-treino</div><div class="meal-title">Refeição pós-treino</div></div>
+        <span class="meal-kcal">~530 kcal</span>
+      </div>
+      <div class="meal-body">
+        <div class="meal-opt"><div class="meal-opt-label">Principal (igual ao almoço — varie os itens)</div><div class="pills"><span class="pill">Carboidrato</span><span class="pill">Proteína 150g</span><span class="pill">Salada à vontade</span></div></div>
+        <div class="meal-opt"><div class="meal-opt-label">Opção rápida (dias cansativos)</div><div class="pills"><span class="pill">Hambúrguer caseiro</span><span class="pill">1 fruta</span></div></div>
+      </div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-head">
+        <div class="meal-head-left"><div class="meal-time">Ceia · antes de dormir</div><div class="meal-title">Proteína noturna</div></div>
+        <span class="meal-kcal">~180 kcal</span>
+      </div>
+      <div class="meal-body">
+        <div class="meal-opt"><div class="meal-opt-label">Opção 1 — caseína natural (ideal)</div><div class="pills"><span class="pill">200g iogurte zero gordura</span><span class="pill">30g whey</span><span class="pill">1 fruta</span></div></div>
+        <div class="meal-opt"><div class="meal-opt-label">Opção 2 — mais leve</div><div class="pills"><span class="pill">200g iogurte desnatado</span><span class="pill">30g whey</span></div></div>
+      </div>
+      <div class="meal-tip">💡 Iogurte à noite é excelente — sua proteína de digestão lenta age durante o sono, ajudando na recuperação muscular.</div>
+    </div>
+
+  </div>
+
+  <div class="day-panel" id="meals-tarde">
+
+    <div class="meal-card">
+      <div class="meal-head">
+        <div class="meal-head-left"><div class="meal-time">Café da manhã · ~08h~09h</div><div class="meal-title">Manhã mais tranquila — refeição reforçada</div></div>
+        <span class="meal-kcal">~450 kcal</span>
+      </div>
+      <div class="meal-body">
+        <div class="meal-opt"><div class="meal-opt-label">Opção 1 — mingau com whey e fruta</div><div class="pills"><span class="pill">55g aveia em flocos</span><span class="pill">30g whey</span><span class="pill">1 fruta fatiada</span><span class="pill">Canela + adoçante</span></div></div>
+        <div class="meal-opt"><div class="meal-opt-label">Opção 2 — bolo de microondas</div><div class="pills"><span class="pill">1 banana amassada (~80g)</span><span class="pill">1 ovo</span><span class="pill">40g aveia</span><span class="pill">30g whey (cobertura)</span><span class="pill">Cacau em pó (opcional)</span></div></div>
+        <div class="meal-opt"><div class="meal-opt-label">Opção 3 — pão com queijo e frango</div><div class="pills"><span class="pill">1 pão francês</span><span class="pill">20g queijo</span><span class="pill">100g frango desfiado</span><span class="pill">1 fruta</span></div></div>
+      </div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-head">
+        <div class="meal-head-left"><div class="meal-time">Lanche · ~12h30 (antes das 14h)</div><div class="meal-title">Antes das aulas da tarde</div></div>
+        <span class="meal-kcal">~280 kcal</span>
+      </div>
+      <div class="meal-body">
+        <div class="meal-opt"><div class="pills"><span class="pill">200g iogurte zero gordura</span><span class="pill">30g whey</span><span class="pill">1 fruta</span></div></div>
+      </div>
+      <div class="meal-tip">💡 Coma antes de entrar nas aulas das 14h para não treinar em jejum depois.</div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-head">
+        <div class="meal-head-left"><div class="meal-time">Pré-treino · Sexta ~16h15</div><div class="meal-title">Antes do JJ das 17h (Sexta)</div></div>
+        <span class="meal-kcal">~200 kcal</span>
+      </div>
+      <div class="meal-body">
+        <div class="meal-opt"><div class="pills"><span class="pill">40g aveia</span><span class="pill">30g whey</span><span class="pill">1 fruta</span></div></div>
+      </div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-head">
+        <div class="meal-head-left"><div class="meal-time">Almoço/Jantar · ~18h (Terça)</div><div class="meal-title">Após as aulas — refeição principal</div></div>
+        <span class="meal-kcal">~580 kcal</span>
+      </div>
+      <div class="meal-body">
+        <div class="meal-opt"><div class="meal-opt-label">Carboidrato + Proteína + Salada (padrão)</div><div class="pills"><span class="pill">Carboidrato à escolha</span><span class="pill">Proteína 150g</span><span class="pill">Salada à vontade</span></div></div>
+      </div>
+      <div class="meal-tip">💡 Terça não tem JJ. Encaixe o treino de academia pela manhã ou após essa refeição (~20h).</div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-head">
+        <div class="meal-head-left"><div class="meal-time">Ceia · ~21h</div><div class="meal-title">Proteína noturna</div></div>
+        <span class="meal-kcal">~180 kcal</span>
+      </div>
+      <div class="meal-body">
+        <div class="meal-opt"><div class="pills"><span class="pill">200g iogurte zero gordura</span><span class="pill">30g whey</span><span class="pill">1~2 frutas</span></div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="day-panel" id="meals-sabado">
+
+    <div class="alert alert-amber">Sábado é dia livre para refeição livre! Substitua 1 almoço ou jantar, mas tente ficar abaixo de 1000kcal nessa refeição.</div>
+
+    <div class="meal-card">
+      <div class="meal-head">
+        <div class="meal-head-left"><div class="meal-time">Café da manhã · ~09h</div><div class="meal-title">Refeição reforçada</div></div>
+        <span class="meal-kcal">~450 kcal</span>
+      </div>
+      <div class="meal-body">
+        <div class="meal-opt"><div class="pills"><span class="pill">55g aveia + 30g whey + fruta</span><span class="pill">ou ovos + pão + fruta</span></div></div>
+      </div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-head">
+        <div class="meal-head-left"><div class="meal-time">Almoço · ~12h</div><div class="meal-title">Refeição padrão ou livre</div></div>
+        <span class="meal-kcal">~580 kcal (ou refeição livre)</span>
+      </div>
+      <div class="meal-body">
+        <div class="meal-opt"><div class="meal-opt-label">Refeição normal</div><div class="pills"><span class="pill">Carboidrato</span><span class="pill">Proteína 150g</span><span class="pill">Salada</span></div></div>
+        <div class="meal-opt"><div class="meal-opt-label">OU refeição livre (1x/semana)</div><div class="pills"><span class="pill">O que quiser · abaixo de 1000kcal</span></div></div>
+      </div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-head">
+        <div class="meal-head-left"><div class="meal-time">Lanche · ~15h30</div><div class="meal-title">Pré-treino sábado</div></div>
+        <span class="meal-kcal">~200 kcal</span>
+      </div>
+      <div class="meal-body">
+        <div class="meal-opt"><div class="pills"><span class="pill">40g aveia</span><span class="pill">30g whey</span></div></div>
+      </div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-head">
+        <div class="meal-head-left"><div class="meal-time">Jantar + Ceia</div><div class="meal-title">Encerramento do dia</div></div>
+        <span class="meal-kcal">~700 kcal</span>
+      </div>
+      <div class="meal-body">
+        <div class="meal-opt"><div class="pills"><span class="pill">Refeição padrão</span><span class="pill">+ iogurte/whey na ceia</span></div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===================== ÁGUA ===================== -->
+<div class="section" id="sec-agua">
+  <div class="sec-title">Hidratação</div>
+  <div class="sec-sub">Meta de 3,0~3,5 litros por dia · ajustado para treino 6x + jiu-jitsu</div>
+
+  <div class="alert alert-blue">Use uma garrafa de 700ml e esvazie 4~5x ao dia. Mais fácil de controlar do que tentar lembrar mililitro por mililitro.</div>
+  <div class="alert alert-amber">Dias com jiu-jitsu: adicione +300~400ml extra. O JJ faz você suar bastante — reidratação é fundamental para recuperação.</div>
+
+  <div class="water-grid">
+    <div class="wc"><div class="wc-icon">🌅</div><div class="wc-t">Ao acordar</div><div class="wc-d">300~500ml antes do café. Reidrata após o sono.</div></div>
+    <div class="wc"><div class="wc-icon">📚</div><div class="wc-t">Manhã (aulas)</div><div class="wc-d">500~600ml. 1 copo a cada hora de aula.</div></div>
+    <div class="wc"><div class="wc-icon">🍽️</div><div class="wc-t">Almoço</div><div class="wc-d">300ml durante ou após a refeição.</div></div>
+    <div class="wc"><div class="wc-icon">🏋️</div><div class="wc-t">Pré-treino</div><div class="wc-d">400~500ml entre o almoço e o treino.</div></div>
+    <div class="wc"><div class="wc-icon">🥋</div><div class="wc-t">Durante treino/JJ</div><div class="wc-d">500~700ml aos poucos. Nunca de uma vez.</div></div>
+    <div class="wc"><div class="wc-icon">🌙</div><div class="wc-t">Noite</div><div class="wc-d">400~500ml até dormir. Repõe o suor perdido.</div></div>
+  </div>
+
+  <div style="margin-bottom:20px">
+    <div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:10px">Cheque sua hidratação</div>
+    <div class="meal-card">
+      <div class="meal-body">
+        <div class="meal-opt" style="display:flex;align-items:center;gap:10px"><span style="width:14px;height:14px;border-radius:50%;background:#a8e063;display:inline-block;flex-shrink:0"></span><span style="font-size:13px;color:var(--text2)">Urina clara / amarelo pálido — você está bem hidratado</span></div>
+        <div class="meal-opt" style="display:flex;align-items:center;gap:10px"><span style="width:14px;height:14px;border-radius:50%;background:#ffb74d;display:inline-block;flex-shrink:0"></span><span style="font-size:13px;color:var(--text2)">Urina amarelo escuro — beba água agora</span></div>
+        <div class="meal-opt" style="display:flex;align-items:center;gap:10px"><span style="width:14px;height:14px;border-radius:50%;background:#ef9a9a;display:inline-block;flex-shrink:0"></span><span style="font-size:13px;color:var(--text2)">Dor de cabeça ou cansaço sem motivo — pode ser desidratação</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="alert alert-purple">Bebidas permitidas além da água: café sem açúcar · limonada sem açúcar · suco natural sem açúcar (200ml) · refrigerante/bebida zero (menor frequência).</div>
+</div>
+
+<!-- ===================== VARIAÇÕES ===================== -->
+<div class="section" id="sec-variacoes">
+  <div class="sec-title">Variações</div>
+  <div class="sec-sub">Opções para não enjoar · mantenha as quantidades próximas das originais</div>
+
+  <div style="font-size:13px;font-weight:600;color:var(--green);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em">Café da manhã</div>
+  <div class="var-grid" style="margin-bottom:20px">
+    <div class="var-card"><div class="var-card-t">Tapioca com ovos</div><div class="pills"><span class="pill">2 tapiocas (50g goma)</span><span class="pill">3 ovos mexidos</span><span class="pill">20g queijo</span></div></div>
+    <div class="var-card"><div class="var-card-t">Pão com ovos e queijo</div><div class="pills"><span class="pill">1 pão francês</span><span class="pill">2 ovos</span><span class="pill">20g queijo</span><span class="pill">1 fruta</span></div></div>
+    <div class="var-card"><div class="var-card-t">Iogurte com granola</div><div class="pills"><span class="pill">200g iogurte zero</span><span class="pill">30g whey</span><span class="pill">20g granola/aveia</span><span class="pill">1 fruta</span></div></div>
+    <div class="var-card"><div class="var-card-t">Panqueca de aveia</div><div class="pills"><span class="pill">40g aveia</span><span class="pill">2 ovos</span><span class="pill">1 banana amassada</span><span class="pill">canela</span></div></div>
+  </div>
+
+  <div style="font-size:13px;font-weight:600;color:var(--blue);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em">Lanches</div>
+  <div class="var-grid" style="margin-bottom:20px">
+    <div class="var-card"><div class="var-card-t">Overnight oats</div><div class="var-sub">Preparar na noite anterior</div><div class="pills"><span class="pill">40g aveia</span><span class="pill">150ml leite desnatado</span><span class="pill">30g whey</span><span class="pill">1 fruta picada</span></div></div>
+    <div class="var-card"><div class="var-card-t">Shake proteico</div><div class="pills"><span class="pill">30g whey</span><span class="pill">200ml leite desnatado</span><span class="pill">1 banana</span></div></div>
+    <div class="var-card"><div class="var-card-t">Tapioca com frango</div><div class="pills"><span class="pill">1 tapioca (30g goma)</span><span class="pill">80g frango desfiado</span><span class="pill">20g queijo</span></div></div>
+    <div class="var-card"><div class="var-card-t">Pão com atum</div><div class="pills"><span class="pill">1 pão francês</span><span class="pill">1 lata atum ao natural</span><span class="pill">limão + tempero</span></div></div>
+  </div>
+
+  <div style="font-size:13px;font-weight:600;color:var(--amber);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em">Proteínas (almoço/jantar)</div>
+  <div class="var-grid" style="margin-bottom:20px">
+    <div class="var-card"><div class="var-card-t">Frango de formas diferentes</div><div class="pills"><span class="pill">grelhado</span><span class="pill">desfiado no molho</span><span class="pill">assado na air fryer</span><span class="pill">cozido com temperos</span></div></div>
+    <div class="var-card"><div class="var-card-t">Carne bovina</div><div class="pills"><span class="pill">patinho moído</span><span class="pill">alcatra grelhada</span><span class="pill">carne de panela</span><span class="pill">bife grelhado</span></div></div>
+    <div class="var-card"><div class="var-card-t">Peixes</div><div class="pills"><span class="pill">tilápia</span><span class="pill">salmão</span><span class="pill">merluza</span><span class="pill">atum (lata, ao natural)</span></div></div>
+    <div class="var-card"><div class="var-card-t">Ovos como proteína</div><div class="pills"><span class="pill">4 ovos mexidos/estrelados</span><span class="pill">omelete com legumes</span></div></div>
+  </div>
+
+  <div style="font-size:13px;font-weight:600;color:var(--purple);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em">Carboidratos (almoço/jantar)</div>
+  <div class="var-grid" style="margin-bottom:20px">
+    <div class="var-card"><div class="var-card-t">Opções secas</div><div class="pills"><span class="pill">Arroz branco 150g</span><span class="pill">Arroz integral 140g</span><span class="pill">Cuscuz 220g</span><span class="pill">Macarrão 170g</span></div></div>
+    <div class="var-card"><div class="var-card-t">Tubérculos</div><div class="pills"><span class="pill">Batata inglesa 200g</span><span class="pill">Batata doce 180g</span><span class="pill">Mandioca 210g</span><span class="pill">Inhame 200g</span></div></div>
+  </div>
+
+  <div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em">Porção de fruta — equivalências</div>
+  <div class="fruit-grid">
+    <div class="fruit-item">🍌 1 banana</div>
+    <div class="fruit-item">🍎 1 maçã</div>
+    <div class="fruit-item">🍊 1 laranja</div>
+    <div class="fruit-item">🥭 1 manga</div>
+    <div class="fruit-item">🥝 2 kiwis</div>
+    <div class="fruit-item">🍇 100g uvas</div>
+    <div class="fruit-item">🫐 200g frutas vermelhas</div>
+    <div class="fruit-item">🍉 250g melancia/melão</div>
+    <div class="fruit-item">🍈 200g mamão</div>
+    <div class="fruit-item">🍍 200g abacaxi</div>
+    <div class="fruit-item">🫒 2 ameixas pequenas</div>
+    <div class="fruit-item">🍐 1 goiaba</div>
+  </div>
+</div>
+
+<!-- ===================== TREINO ===================== -->
+<div class="section" id="sec-treino">
+  <div class="sec-title">Treino</div>
+  <div class="sec-sub">Divisão ABC dupla · 6x/semana · JJ conta como cardio</div>
+
+  <div class="alert alert-green">3~4 séries de 8~12 reps por exercício. Descanso de 60~90s entre séries. Última série sempre próxima da falha.</div>
+  <div class="alert alert-amber">JJ (Seg/Qua/Sex): cardio da academia é opcional — 10~15min leve de aquecimento, no máximo. Não acumule fadiga excessiva.</div>
+
+  <div class="treino-list">
+
+    <div class="treino-card">
+      <div class="treino-head" onclick="toggleTreino(this)">
+        <div class="treino-head-left">
+          <div class="treino-day-label">Segunda-feira · Jiu-Jitsu depois</div>
+          <div class="treino-name">Peito + Tríceps (A)</div>
+        </div>
+        <div class="treino-right">
+          <span class="treino-badge badge-jj">🥋 JJ 17h</span>
+          <span class="chevron">›</span>
+        </div>
+      </div>
+      <div class="treino-body">
+        <table class="ex-table">
+          <tr><th>Exercício</th><th>Séries</th><th>Reps</th></tr>
+          <tr><td>Supino reto com barra</td><td>4</td><td>8~10</td></tr>
+          <tr><td>Supino inclinado com halteres</td><td>3</td><td>10~12</td></tr>
+          <tr><td>Crucifixo com halteres</td><td>3</td><td>12</td></tr>
+          <tr><td>Peck deck / cross-over</td><td>3</td><td>12~15</td></tr>
+          <tr><td>Tríceps pulley (corda)</td><td>3</td><td>12</td></tr>
+          <tr><td>Tríceps testa com barra W</td><td>3</td><td>10</td></tr>
+          <tr><td>Mergulho entre bancos</td><td>3</td><td>12~15</td></tr>
+        </table>
+        <div class="cardio-box"><span>Cardio:</span> JJ das 17~18h já cobre. Opcional: 10~15min esteira leve como aquecimento antes do treino.</div>
+      </div>
+    </div>
+
+    <div class="treino-card">
+      <div class="treino-head" onclick="toggleTreino(this)">
+        <div class="treino-head-left">
+          <div class="treino-day-label">Terça-feira · Sem JJ</div>
+          <div class="treino-name">Costas + Bíceps (B)</div>
+        </div>
+        <div class="treino-right">
+          <span class="treino-badge badge-cardio">🏃 Cardio incluso</span>
+          <span class="chevron">›</span>
+        </div>
+      </div>
+      <div class="treino-body">
+        <table class="ex-table">
+          <tr><th>Exercício</th><th>Séries</th><th>Reps</th></tr>
+          <tr><td>Puxada frontal (pegada larga)</td><td>4</td><td>8~10</td></tr>
+          <tr><td>Remada curvada com barra</td><td>3</td><td>8~10</td></tr>
+          <tr><td>Remada unilateral com haltere</td><td>3</td><td>10~12</td></tr>
+          <tr><td>Puxada neutra (pegada fechada)</td><td>3</td><td>10~12</td></tr>
+          <tr><td>Remada baixa (serrote)</td><td>3</td><td>12</td></tr>
+          <tr><td>Rosca direta com barra</td><td>3</td><td>10</td></tr>
+          <tr><td>Rosca martelo com halteres</td><td>3</td><td>12</td></tr>
+          <tr><td>Rosca concentrada</td><td>3</td><td>12</td></tr>
+        </table>
+        <div class="cardio-box"><span>Cardio:</span> 20~25min de esteira (6~7km/h) ou bicicleta ergométrica após o treino.</div>
+      </div>
+    </div>
+
+    <div class="treino-card">
+      <div class="treino-head" onclick="toggleTreino(this)">
+        <div class="treino-head-left">
+          <div class="treino-day-label">Quarta-feira · Jiu-Jitsu depois</div>
+          <div class="treino-name">Pernas (C)</div>
+        </div>
+        <div class="treino-right">
+          <span class="treino-badge badge-jj">🥋 JJ 17h</span>
+          <span class="chevron">›</span>
+        </div>
+      </div>
+      <div class="treino-body">
+        <table class="ex-table">
+          <tr><th>Exercício</th><th>Séries</th><th>Reps</th></tr>
+          <tr><td>Agachamento livre com barra</td><td>4</td><td>8~10</td></tr>
+          <tr><td>Leg press 45°</td><td>4</td><td>10~12</td></tr>
+          <tr><td>Cadeira extensora</td><td>3</td><td>12~15</td></tr>
+          <tr><td>Mesa flexora</td><td>3</td><td>12</td></tr>
+          <tr><td>Avanço com halteres</td><td>3</td><td>12 (cada)</td></tr>
+          <tr><td>Stiff com halteres</td><td>3</td><td>12</td></tr>
+          <tr><td>Panturrilha em pé</td><td>4</td><td>15~20</td></tr>
+        </table>
+        <div class="cardio-box"><span>Cardio:</span> JJ das 17~18h já cobre. Não adicione cardio pesado — perna + JJ no mesmo dia é suficiente e intenso.</div>
+      </div>
+    </div>
+
+    <div class="treino-card">
+      <div class="treino-head" onclick="toggleTreino(this)">
+        <div class="treino-head-left">
+          <div class="treino-day-label">Quinta-feira · Sem JJ</div>
+          <div class="treino-name">Peito + Tríceps (A2 — variação)</div>
+        </div>
+        <div class="treino-right">
+          <span class="treino-badge badge-cardio">🏃 Cardio incluso</span>
+          <span class="chevron">›</span>
+        </div>
+      </div>
+      <div class="treino-body">
+        <table class="ex-table">
+          <tr><th>Exercício</th><th>Séries</th><th>Reps</th></tr>
+          <tr><td>Supino inclinado com barra</td><td>4</td><td>8~10</td></tr>
+          <tr><td>Supino reto com halteres</td><td>3</td><td>10~12</td></tr>
+          <tr><td>Cross-over (cabo)</td><td>3</td><td>12~15</td></tr>
+          <tr><td>Flexão de braço (finalização)</td><td>3</td><td>máximo</td></tr>
+          <tr><td>Tríceps corda no pulley</td><td>3</td><td>12</td></tr>
+          <tr><td>French press com haltere</td><td>3</td><td>10~12</td></tr>
+          <tr><td>Tríceps banco (paralelas)</td><td>3</td><td>12~15</td></tr>
+        </table>
+        <div class="cardio-box"><span>Cardio:</span> 20~25min de esteira ou bike após o treino.</div>
+      </div>
+    </div>
+
+    <div class="treino-card">
+      <div class="treino-head" onclick="toggleTreino(this)">
+        <div class="treino-head-left">
+          <div class="treino-day-label">Sexta-feira · Jiu-Jitsu depois</div>
+          <div class="treino-name">Costas + Bíceps (B2 — variação)</div>
+        </div>
+        <div class="treino-right">
+          <span class="treino-badge badge-jj">🥋 JJ 17h</span>
+          <span class="chevron">›</span>
+        </div>
+      </div>
+      <div class="treino-body">
+        <table class="ex-table">
+          <tr><th>Exercício</th><th>Séries</th><th>Reps</th></tr>
+          <tr><td>Puxada frontal (pegada fechada)</td><td>4</td><td>8~10</td></tr>
+          <tr><td>Remada máquina</td><td>3</td><td>10~12</td></tr>
+          <tr><td>Pull-over com haltere</td><td>3</td><td>12</td></tr>
+          <tr><td>Remada cavalinho</td><td>3</td><td>10~12</td></tr>
+          <tr><td>Rosca W com barra</td><td>3</td><td>10</td></tr>
+          <tr><td>Rosca inversa</td><td>3</td><td>12</td></tr>
+          <tr><td>Rosca 21 com barra</td><td>3</td><td>21 (7+7+7)</td></tr>
+        </table>
+        <div class="cardio-box"><span>Cardio:</span> JJ das 17~18h já cobre. Opcional: 10min de aquecimento na esteira antes de treinar.</div>
+      </div>
+    </div>
+
+    <div class="treino-card">
+      <div class="treino-head" onclick="toggleTreino(this)">
+        <div class="treino-head-left">
+          <div class="treino-day-label">Sábado · Sem JJ</div>
+          <div class="treino-name">Ombros + Abdômen (D)</div>
+        </div>
+        <div class="treino-right">
+          <span class="treino-badge badge-cardio">🏃 Cardio incluso</span>
+          <span class="chevron">›</span>
+        </div>
+      </div>
+      <div class="treino-body">
+        <table class="ex-table">
+          <tr><th>Exercício</th><th>Séries</th><th>Reps</th></tr>
+          <tr><td>Desenvolvimento com halteres</td><td>4</td><td>10~12</td></tr>
+          <tr><td>Elevação lateral com halteres</td><td>4</td><td>12~15</td></tr>
+          <tr><td>Elevação frontal</td><td>3</td><td>12</td></tr>
+          <tr><td>Crucifixo inverso (posterior)</td><td>3</td><td>12~15</td></tr>
+          <tr><td>Encolhimento de ombros</td><td>3</td><td>15</td></tr>
+          <tr><td>Abdominal crunch</td><td>4</td><td>15~20</td></tr>
+          <tr><td>Prancha frontal</td><td>3</td><td>30~45s</td></tr>
+          <tr><td>Abdominal bicicleta (oblíquo)</td><td>3</td><td>20</td></tr>
+        </table>
+        <div class="cardio-box"><span>Cardio:</span> 25~30min de esteira, bike ou caminhada acelerada após o treino.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="alert alert-red" style="margin-top:16px">🛌 Domingo: descanso total. É quando o músculo cresce. Não pule o descanso — ele é parte do treino.</div>
+</div>
+
+<!-- ===================== SEMANA ===================== -->
+<div class="section" id="sec-semana">
+  <div class="sec-title">Visão da Semana</div>
+  <div class="sec-sub">Grade completa com aulas, treinos e jiu-jitsu</div>
+
+  <div id="week-days"></div>
+
+  <div class="alert alert-green" style="margin-top:16px">Regras gerais: mínimo 7h de sono · não pular refeições · chiclete sem açúcar liberado entre refeições · refeição livre 1x/semana (sáb ou dom) abaixo de 1000kcal.</div>
+  <div class="alert alert-blue">Se perder uma refeição: não compense na próxima. Apenas continue o plano normalmente na refeição seguinte.</div>
+</div>
+
+</div><!-- /main -->
+
+<div class="footer">Plano personalizado para Joao Gui · 81kg → 73~74kg · UnB · 2026</div>
+
+<script>
+// NAV
+function showSection(id, btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  btn.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// MEAL TABS
+function showMeals(id, el){
+  document.querySelectorAll('.day-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('#meal-tabs .day-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('meals-'+id).classList.add('active');
+  el.classList.add('active');
+}
+
+// TREINO TOGGLE
+function toggleTreino(head){
+  const body = head.nextElementSibling;
+  const chevron = head.querySelector('.chevron');
+  const open = body.classList.contains('open');
+  body.classList.toggle('open');
+  chevron.style.transform = open ? 'rotate(0deg)' : 'rotate(90deg)';
+}
+
+// PROGRESS
+function updateProgress(){
+  const input = document.getElementById('peso-input');
+  const val = parseFloat(input.value);
+  if(!val || val < 60 || val > 90){ input.style.borderColor='var(--red)'; return; }
+  input.style.borderColor='var(--green)';
+  const start = 81, goal = 73.5;
+  const total = start - goal;
+  const done = Math.max(0, Math.min(start - val, total));
+  const pct = Math.round((done/total)*100);
+  document.getElementById('prog-bar').style.width = pct+'%';
+  document.querySelector('.hero-chips .chip.green').textContent = 'Meta: 73~74kg · '+pct+'% concluído';
+}
+
+// BUILD WEEK
+const weekData = [
+  { day:'Segunda', color:'#a8e063', textColor:'#0f2000',
+    blocks:[
+      {label:'08h~09h50',text:'Matemática Discreta 1',type:'aula'},
+      {label:'10h~11h50',text:'Cálculo 3',type:'aula'},
+      {label:'12h~13h50',text:'Métodos de Desenv. Software',type:'aula'},
+      {label:'~14h~16h',text:'Treino — Peito + Tríceps',type:'treino'},
+      {label:'17h~18h',text:'Jiu-Jitsu 🥋',type:'jj'},
+      {label:'Pós JJ',text:'Jantar + Ceia',type:'refeicao'},
+    ]
+  },
+  { day:'Terça', color:'#64b5f6', textColor:'#001a30',
+    blocks:[
+      {label:'10h~11h50',text:'Cálculo 3',type:'aula'},
+      {label:'14h~15h50',text:'Gestão da Produção',type:'aula'},
+      {label:'16h~17h50',text:'Humanidades e Cidadania',type:'aula'},
+      {label:'Noite ou manhã',text:'Treino — Costas + Bíceps',type:'treino'},
+      {label:'Pós aulas',text:'Almoço tardio + Ceia',type:'refeicao'},
+    ]
+  },
+  { day:'Quarta', color:'#ffb74d', textColor:'#2a1500',
+    blocks:[
+      {label:'08h~09h50',text:'Matemática Discreta 1',type:'aula'},
+      {label:'12h~13h50',text:'Métodos de Desenv. Software',type:'aula'},
+      {label:'14h~15h50',text:'Teoria de Eletrônica Digital',type:'aula'},
+      {label:'~16h~16h45',text:'Treino — Pernas',type:'treino'},
+      {label:'17h~18h',text:'Jiu-Jitsu 🥋',type:'jj'},
+      {label:'Pós JJ',text:'Jantar + Ceia',type:'refeicao'},
+    ]
+  },
+  { day:'Quinta', color:'#ce93d8', textColor:'#1a0025',
+    blocks:[
+      {label:'08h~09h50',text:'Prática de Eletrônica Digital',type:'aula'},
+      {label:'10h~11h50',text:'Cálculo 3',type:'aula'},
+      {label:'14h~15h50',text:'Gestão da Produção',type:'aula'},
+      {label:'16h~17h50',text:'Humanidades e Cidadania',type:'aula'},
+      {label:'Noite',text:'Treino — Peito + Tríceps A2',type:'treino'},
+      {label:'Pós treino',text:'Jantar + Ceia',type:'refeicao'},
+    ]
+  },
+  { day:'Sexta', color:'#ef9a9a', textColor:'#2a0000',
+    blocks:[
+      {label:'14h~15h50',text:'Teoria de Eletrônica Digital',type:'aula'},
+      {label:'Manhã livre',text:'Treino — Costas + Bíceps B2',type:'treino'},
+      {label:'17h~18h',text:'Jiu-Jitsu 🥋',type:'jj'},
+      {label:'Pós JJ',text:'Jantar + Ceia',type:'refeicao'},
+    ]
+  },
+  { day:'Sábado', color:'#80cbc4', textColor:'#001a18',
+    blocks:[
+      {label:'Manhã',text:'Treino — Ombros + Abdômen',type:'treino'},
+      {label:'Almoço',text:'Refeição normal ou livre 🎉',type:'refeicao'},
+      {label:'Resto do dia',text:'Descanso e recuperação',type:'descanso'},
+    ]
+  },
+  { day:'Domingo', color:'#a5a5a5', textColor:'#101010',
+    blocks:[
+      {label:'Dia todo',text:'Descanso total 😴',type:'descanso'},
+    ]
+  },
+];
+
+const typeStyles = {
+  aula:     'background:#1e1e1e;border-left:3px solid #64b5f6;',
+  treino:   'background:#1a2a1a;border-left:3px solid #a8e063;',
+  jj:       'background:#2a1f00;border-left:3px solid #ffb74d;',
+  refeicao: 'background:#1a1a2a;border-left:3px solid #ce93d8;',
+  descanso: 'background:#1e1e1e;border-left:3px solid #666;',
+};
+
+const container = document.getElementById('week-days');
+weekData.forEach(d=>{
+  const html = `
+  <div style="margin-bottom:14px">
+    <div style="background:${d.color};color:${d.textColor};font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.06em;padding:8px 16px;border-radius:var(--radius) var(--radius) 0 0">${d.day}</div>
+    <div style="border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius) var(--radius);overflow:hidden">
+      ${d.blocks.map((b,i)=>`
+        <div style="${typeStyles[b.type]}padding:9px 14px;${i<d.blocks.length-1?'border-bottom:1px solid var(--border);':''}display:flex;gap:12px;align-items:flex-start">
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);min-width:90px;padding-top:2px">${b.label}</div>
+          <div style="font-size:13px;color:var(--text)">${b.text}</div>
+        </div>
+      `).join('')}
+    </div>
+  </div>`;
+  container.insertAdjacentHTML('beforeend',html);
+});
+</script>
+</body>
+</html>
