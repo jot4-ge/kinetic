@@ -1,17 +1,17 @@
 :root {
-  --bg: #0f0f0f;
-  --bg2: #161616;
-  --bg3: #1e1e1e;
-  --bg4: #252525;
-  --border: rgba(255,255,255,0.08);
-  --border2: rgba(255,255,255,0.14);
-  --text: #f0f0f0;
-  --text2: #aaa;
-  --text3: #555;
-  --green: #a8e063;
-  --green2: #6fcf4a;
-  --green-bg: rgba(168,224,99,0.1);
-  --green-border: rgba(168,224,99,0.25);
+  --bg: #080808;
+  --bg2: #101010;
+  --bg3: #181818;
+  --bg4: #202020;
+  --border: rgba(255,255,255,0.06);
+  --border2: rgba(255,255,255,0.12);
+  --text: #efefef;
+  --text2: #999;
+  --text3: #444;
+  --green: #ff3c3c;
+  --green2: #cc2020;
+  --green-bg: rgba(255,60,60,0.08);
+  --green-border: rgba(255,60,60,0.22);
   --blue: #64b5f6;
   --blue-bg: rgba(100,181,246,0.1);
   --amber: #ffb74d;
@@ -39,11 +39,153 @@ body {
  
 /* ── HERO ── */
 .hero {
+/* ── HERO ── */
+.hero {
   position: relative;
-  background: var(--bg2);
+  background: var(--bg);
   border-bottom: 1px solid var(--border);
-  padding: 44px 20px 28px;
+  padding: 0;
   overflow: hidden;
+}
+
+.hero-photos {
+  position: relative;
+  width: 100%;
+  height: 480px;
+  display: flex;
+  overflow: hidden;
+}
+
+.hero-photo {
+  flex: 1;
+  object-fit: cover;
+  object-position: center 20%;
+  display: block;
+  filter: brightness(0.75) contrast(1.1);
+  transition: filter .3s;
+}
+
+.hero-photo:first-child {
+  object-position: center 15%;
+}
+
+.hero-photo-divider {
+  width: 2px;
+  background: var(--bg);
+  flex-shrink: 0;
+  z-index: 2;
+}
+
+.hero-photos::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 40%,
+    rgba(8,8,8,0.5) 75%,
+    var(--bg) 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.hero-photo {
+  flex: 1;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+  filter: brightness(0.75) contrast(1.1);
+  transition: filter .3s;
+}
+
+.hero-photo:first-child {
+  object-position: center center;
+}
+
+.hero-photo-divider {
+  width: 2px;
+  background: var(--bg);
+  flex-shrink: 0;
+  z-index: 2;
+}
+
+/* gradiente sobre as fotos */
+.hero-photos::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 30%,
+    rgba(8,8,8,0.6) 70%,
+    var(--bg) 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.hero-content {
+  position: relative;
+  padding: 0 20px 28px;
+  margin-top: -100px;
+  z-index: 2;
+}
+
+.hero-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--green);
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.hero-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(52px, 14vw, 72px);
+  letter-spacing: .06em;
+  line-height: .95;
+  color: #fff;
+  margin-bottom: 5px;
+  text-shadow: 0 0 60px rgba(232,255,71,0.15);
+}
+
+.hero-sub {
+  font-size: 12px;
+  color: var(--text2);
+  letter-spacing: .04em;
+}
+
+.hero-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 16px;
+}
+
+.chip {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 11px;
+  border-radius: 20px;
+  border: 1px solid var(--border2);
+  background: var(--bg3);
+  color: var(--text2);
+  letter-spacing: .03em;
+}
+
+.chip.green {
+  border-color: var(--green-border);
+  background: var(--green-bg);
+  color: var(--green);
+}
+
+.chip.blue {
+  border-color: rgba(100,181,246,.25);
+  background: var(--blue-bg);
+  color: var(--blue);
+}
 }
 .hero::before {
   content: '';

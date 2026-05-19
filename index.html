@@ -19,23 +19,33 @@ Copiar
 <body>
  
 <div class="hero">
-  <div class="hero-tag">Plano Personalizado · 2026</div>
-  <div class="hero-name">JOÃO GUI</div>
-  <div class="hero-sub">Dieta · Treino · Hidratação · Grade UnB</div>
-  <div class="hero-chips">
-    <span class="chip green" id="chip-meta">Meta: 73~74kg</span>
-    <span class="chip blue">Atual: 81kg · 1,70m</span>
-    <span class="chip">6x/semana</span>
-    <span class="chip">JJ Seg · Qua · Sex</span>
-    <span class="chip">~1850 kcal</span>
+  <!-- FOTOS -->
+  <div class="hero-photos">
+    <img class="hero-photo" src="foto-frente.jpg" alt="João Gui — frente">
+    <div class="hero-photo-divider"></div>
+    <img class="hero-photo" src="foto-costas.jpg" alt="João Gui — costas">
   </div>
-  <div class="progress-wrap">
-    <div class="progress-label">Progresso até a meta <span id="prog-pct">0%</span></div>
-    <div class="progress-bar-bg"><div class="progress-bar-fill" id="prog-bar" style="width:0%"></div></div>
-    <div class="progress-ends"><span>81kg (início)</span><span>73~74kg (meta)</span></div>
-    <div class="peso-row">
-      <input type="number" id="peso-input" placeholder="Peso atual (kg)" step="0.1" min="60" max="90" inputmode="decimal">
-      <button onclick="updateProgress()">Atualizar</button>
+
+  <!-- CONTEÚDO -->
+  <div class="hero-content">
+    <div class="hero-tag">Plano Personalizado · 2026</div>
+    <div class="hero-name">JOÃO GUI</div>
+    <div class="hero-sub">Dieta · Treino · Hidratação · Grade UnB</div>
+    <div class="hero-chips">
+      <span class="chip green" id="chip-meta">Meta: 73~74kg</span>
+      <span class="chip blue">Atual: 81kg · 1,70m</span>
+      <span class="chip">6x/semana</span>
+      <span class="chip">JJ Seg · Qua · Sex</span>
+      <span class="chip">~1850 kcal</span>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-label">Progresso até a meta <span id="prog-pct">0%</span></div>
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="prog-bar" style="width:0%"></div></div>
+      <div class="progress-ends"><span>81kg (início)</span><span>73~74kg (meta)</span></div>
+      <div class="peso-row">
+        <input type="number" id="peso-input" placeholder="Peso atual (kg)" step="0.1" min="60" max="90" inputmode="decimal">
+        <button onclick="updateProgress()">Atualizar</button>
+      </div>
     </div>
   </div>
 </div>
