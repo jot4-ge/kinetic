@@ -48,6 +48,30 @@ _Evitar_: refeição livre (ambíguo com Refeição Livre), meal
 Uma combinação específica de alimentos dentro de uma Refeição. Cada Opção tem valores canônicos de kcal, proteína, carboidrato e gordura.
 _Evitar_: alternativa, variação
 
+**SessaoTreino**:
+A representação no Plano da sessão de musculação de um dia específico da semana. Contém SlotDeExercicio em sequência e uma flag indicando se há JJ naquele mesmo dia (com impacto em hidratação e orientação de cardio). SessaoTreino é o dado estruturado — Treino é o ato de realizá-la.
+_Evitar_: treino do dia, plano de treino diário, workout
+
+**SlotDeExercicio**:
+Uma posição dentro de uma SessaoTreino que contém uma ou mais OpcaoDeExercicio. O Usuário escolhe uma das opções ao logar. Simétrico ao conceito de Refeição (que agrupa OpcaoDeRefeicao).
+_Evitar_: exercício do treino, linha de treino, movimento
+
+**OpcaoDeExercicio**:
+Um Exercício específico disponível como alternativa dentro de um SlotDeExercicio (ex: "Supino reto com barra" ou "Supino com halteres" quando não há barra disponível). O Usuário escolhe uma ao logar o treino. Simétrico ao conceito de Opção de Refeição.
+_Evitar_: exercício alternativo, substituto, variação
+
+**Exercicio**:
+Um exercício de musculação no Banco de Opções, com nome, GrupoMuscular(es) que trabalha, número de séries e Repetição prescrita. A prescrição (séries e Repetição) é fixa no Banco — não varia por Plano neste momento.
+_Evitar_: movimento, atividade, exercício (sem maiúscula, que pode ser genérico)
+
+**GrupoMuscular**:
+Conjunto fechado (enum) dos grupos musculares reconhecidos pelo sistema. Usado pelo Motor de Geração para montar divisões de treino (ex: ABC). Valores: Peito, Tríceps, Costas, Bíceps, Ombros, Quadríceps, Glúteo, Isquiotibiais, Panturrilha, Abdômen.
+_Evitar_: músculo (isolado), categoria, grupo (genérico)
+
+**Repetição**:
+A prescrição de repetições de um Exercicio. União discriminada com cinco variantes cobrindo todos os casos do Banco de Opções: **Faixa** `{ min, max }` para "8~10"; **Fixo** `{ valor }` para "20"; **Falha** para "até a falha/máximo"; **Tempo** `{ min, max }` em segundos para "30~45s"; **Pirâmide** `{ sequencia: number[] }` para "21 (7+7+7)" ou "12→15→20". Nunca string livre.
+_Evitar_: reps (string), "8~10" (string), repetições como texto
+
 **Registro de Aderência**:
 O registro de um Usuário para um dia específico. Contém Registros de Refeição, consumo de água, conclusão de Treino/JJ e itens de Checklist. Sempre vinculado ao Plano Ativo na data do registro. É "como o Usuário jogou aquele dia dentro das regras do Plano" — nunca modifica o Plano. Tem dois carimbos de tempo: `data` (data do dispositivo no momento da criação — imutável) e `editado_em` (timestamp da última modificação — atualizado a cada edição). Pode ser editado retroativamente; `editado_em` preserva quando a edição aconteceu de fato.
 _Evitar_: log do dia, diário, entrada diária
