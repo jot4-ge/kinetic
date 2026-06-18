@@ -1,0 +1,3 @@
+# Registro de Aderência tem dois carimbos de tempo distintos: data e editado_em
+
+`data` é a data do dispositivo no momento em que o Registro foi criado — imutável, define a qual dia o Registro pertence. `editado_em` é o timestamp da última modificação — atualizado a cada edição retroativa. Registros podem ser editados após o dia passar, sem limite de tempo; mas `editado_em` preserva a informação real de quando cada edição aconteceu, evitando que edições retroativas distorçam a percepção do usuário sobre seu próprio padrão de aderência. A data de pertencimento de um Registro nunca muda — só quem criou o Registro no dia X pode ter criado um Registro para o dia X.
