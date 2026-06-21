@@ -57,3 +57,7 @@ export {
 // Refeicao[] templates by day type — Motor de Geração picks the right one
 // when assembling a Plano for a given day's schedule.
 export { REFEICOES_CEDO, REFEICOES_TARDE, REFEICOES_SABADO } from "./refeicoes"
+
+// Week training split — Motor de Geração reads SESSOES_SEMANA to build SessaoTreino[].
+export { SESSOES_SEMANA } from "./treinos"
+export type { SessaoTreinoTemplate } from "./treinos"

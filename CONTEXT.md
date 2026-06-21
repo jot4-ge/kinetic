@@ -100,6 +100,10 @@ _Evitar_: workout, sessão de treino, exercício (para a sessão inteira)
 Sessão de jiu-jitsu. Atividade física distinta do Treino, com impacto diferente em hidratação e caloria. Ocorre Seg/Qua/Sex.
 _Evitar_: treino de jiu-jitsu, arte marcial (no contexto do Plano)
 
+**Meta de Hidratação**:
+O volume diário de água definido pelo Plano, calculado como 35 ml por kg de peso corporal. Valor fixo ao longo da Vigência do Plano — não varia por dia de treino ou JJ (ADR-0010). Armazenado em `meta_agua_diaria_ml`. O usuário registra o consumo real em `RegistroDeAderencia.agua_consumida_ml`.
+_Evitar_: meta de água (ambíguo com "objetivo de água"), hidratação diária (sem âncora no Plano)
+
 **Checklist**:
 Lista de tarefas diárias de aderência que não pertencem a uma Refeição, Treino ou registro de Água (ex: dormir 7h, não pular refeições). Marcável por dia.
 _Evitar_: tarefas, to-do, itens do dia
