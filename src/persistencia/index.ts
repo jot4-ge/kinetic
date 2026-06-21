@@ -12,4 +12,5 @@ export type {
   RegistroRepositorio,
 } from "./contratos"
 
-// TODO: implement and export createIdbAdapter() from "./idb" in a future task
+export { openDb, DB_NAME, DB_VERSION } from "./idb/db"
+export { createIdbAdapter } from "./idb/adapter"
