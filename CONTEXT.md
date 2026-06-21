@@ -5,7 +5,7 @@ App de acompanhamento de rotina personalizada: exibe o Plano do usuário (o que 
 ## Linguagem
 
 **Plano**:
-O programa personalizado completo de dieta, treino e hidratação que um Usuário segue. Define "as regras do jogo" de um período: meta calórica, macros, objetivo declarado, dias de treino, restrições. Existe como estrutura de dados. Qualquer mudança nesses números-base encerra o Plano atual (arquiva) e inicia um novo — não é editado no lugar.
+O programa personalizado completo de dieta, treino e hidratação que um Usuário segue. Define "as regras do jogo" de um período: meta calórica, macros, objetivo declarado, dias de treino, restrições. Existe como estrutura de dados. Qualquer mudança nesses números-base encerra o Plano atual (arquiva) e inicia um novo — não é editado no lugar. O Plano contém múltiplos Perfis de Dia de refeição — um conjunto de Refeições específico para cada padrão de dia da semana.
 _Evitar_: programa, rotina, protocolo
 
 **Plano Ativo**:
@@ -25,7 +25,7 @@ A pessoa que possui Planos e gera Registros de Aderência. Pode ter um Plano Ati
 _Evitar_: pessoa, atleta, cliente
 
 **Motor de Geração**:
-O componente que produz um Plano a partir das especificações do Usuário. Opera em duas etapas: (1) cálculo determinístico de meta calórica e macros via TMB (Mifflin-St Jeor) + fator de atividade + ajuste por objetivo; (2) seleção de itens do Banco de Opções que satisfazem esses números e as preferências do Usuário. Sem IA generativa — mesmos inputs sempre produzem o mesmo Plano.
+O componente que produz um Plano a partir das especificações do Usuário. Opera em duas etapas: (1) cálculo determinístico de meta calórica e macros via TMB (Mifflin-St Jeor) + fator de atividade + ajuste por objetivo; (2) seleção de itens do Banco de Opções que satisfazem esses números e as preferências do Usuário. Sem IA generativa — mesmos inputs sempre produzem o mesmo Plano. O Plano gerado contém exatamente uma OpcaoDeRefeicao por Refeição (a mais próxima do alvo calórico). Parâmetros de ajuste calórico e distribuição de macros documentados em ADR-0011.
 _Evitar_: gerador, algoritmo, calculadora de plano
 
 **TMB** (Taxa Metabólica Basal):
@@ -37,11 +37,15 @@ A abstração que isola "onde os dados moram" do restante da aplicação. Na Cam
 _Evitar_: storage, banco de dados, persistence layer
 
 **Banco de Opções**:
-Conjunto curado de Opções de Refeição e exercícios mantido manualmente (não gerado por algoritmo nem por IA). É a fonte de conteúdo que o Motor de Geração usa para popular o Plano após calcular os números-base.
+Conjunto curado de Opções de Refeição e exercícios mantido manualmente (não gerado por algoritmo nem por IA). É a fonte de conteúdo que o Motor de Geração usa para popular o Plano após calcular os números-base. Os macros das Opções de Refeição são estimativas calculadas a partir da tabela TACO 4ª edição — pendentes de revisão manual pelo usuário (ver `.scratch/revisao-macros-banco/issue.md`).
 _Evitar_: biblioteca, catálogo, base de dados de alimentos
 
+**Perfil de Dia**:
+Agrupamento de Refeições que se aplica a um ou mais dias da semana com o mesmo padrão alimentar. Um Plano contém múltiplos Perfis de Dia: a UI exibe o Perfil correspondente ao dia atual usando `resolverPerfilDia`. Simétrico ao conceito de SessaoTreino, que agrupa exercícios por dia de treino. O Banco de Opções define quatro Perfis: CEDO (Seg/Qua/Qui), TERCA, SEXTA e FIM_DE_SEMANA (Sáb/Dom).
+_Evitar_: cardápio do dia, template de dia, plano diário
+
 **Refeição**:
-Um slot de alimentação com horário definido dentro do Plano (ex: Café da manhã, Lanche, Almoço). Contém uma ou mais Opções, cada uma com macros precisos.
+Um slot de alimentação com horário definido, pertencente a um Perfil de Dia (ex: Café da manhã às 07:00 no perfil CEDO; Café da manhã às 08:30 no perfil TERCA). Contém uma ou mais Opções de Refeição, cada uma com macros precisos. O Motor de Geração seleciona exatamente uma Opção por slot ao montar o Plano.
 _Evitar_: refeição livre (ambíguo com Refeição Livre), meal
 
 **Opção de Refeição**:
@@ -105,5 +109,5 @@ O volume diário de água definido pelo Plano, calculado como 35 ml por kg de pe
 _Evitar_: meta de água (ambíguo com "objetivo de água"), hidratação diária (sem âncora no Plano)
 
 **Checklist**:
-Lista de tarefas diárias de aderência que não pertencem a uma Refeição, Treino ou registro de Água (ex: dormir 7h, não pular refeições). Marcável por dia.
+Lista de tarefas diárias de aderência que não pertencem a uma Refeição, Treino ou registro de Água. Marcável por dia. Quatro itens padrão aprovados como produto em `src/banco-opcoes/checklist.ts`: beber toda a água do dia, dormir pelo menos 7 horas, não pular nenhuma refeição, tomar creatina e vitaminas.
 _Evitar_: tarefas, to-do, itens do dia

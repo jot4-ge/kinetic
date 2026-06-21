@@ -8,7 +8,7 @@ export { calcularTDEE, calcularKcalMeta, FATORES_ATIVIDADE, AJUSTES_OBJETIVO } f
 export { calcularMacros, PROTEINA_G_POR_KG, GORDURA_MIN_G_POR_KG }            from "./calculo-macros"
 
 // ─── Etapa 2 — funções e tipos ────────────────────────────────────────────────
-export { selecionarOpcao, montarRefeicoes }   from "./selecao-refeicoes"
+export { selecionarOpcao, montarRefeicoes, montarPerfisRefeicao, resolverPerfilDia } from "./selecao-refeicoes"
 export { montarSessoesTreino }                from "./selecao-treino"
 export { montarConteudoDoPlano }              from "./montar-plano"
 export type { ConteudoDoPlano, EntradaMontagem } from "./montar-plano"

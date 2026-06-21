@@ -2,12 +2,12 @@ import type {
   Macros,
   ObjetivoDePlano,
   DiaDaSemana,
-  ChecklistItemTemplate,
   PlanoAtivo,
+  PerfilDeRefeicao,
 } from "@/types"
-import { REFEICOES_CEDO } from "@/banco-opcoes"
-import { montarRefeicoes }    from "./selecao-refeicoes"
-import { montarSessoesTreino } from "./selecao-treino"
+import { PERFIS_REFEICAO_PADRAO, CHECKLIST_PADRAO } from "@/banco-opcoes"
+import { montarPerfisRefeicao } from "./selecao-refeicoes"
+import { montarSessoesTreino }  from "./selecao-treino"
 
 // Content of a Plano without persistence-layer metadata
 // (id, usuario_id, autor_id, criado_em, vigencia — assigned by Camada de Persistência).
@@ -21,8 +21,9 @@ export interface EntradaMontagem {
   readonly macros:     Macros
   readonly objetivo:   ObjetivoDePlano
   readonly peso_kg:    number
-  readonly dias_treino?: readonly DiaDaSemana[]
-  readonly dias_jj?:    readonly DiaDaSemana[]
+  readonly dias_treino?:            readonly DiaDaSemana[]
+  readonly dias_jj?:                readonly DiaDaSemana[]
+  readonly perfis_refeicao_template?: readonly PerfilDeRefeicao[]
 }
 
 // Default training schedule — 5 gym days, 3 JJ days (Seg/Qua/Sex).
@@ -31,13 +32,6 @@ const DIAS_TREINO_PADRAO: readonly DiaDaSemana[] = [
   "Segunda", "Terca", "Quarta", "Quinta", "Sabado",
 ]
 const DIAS_JJ_PADRAO: readonly DiaDaSemana[] = ["Segunda", "Quarta", "Sexta"]
-
-const CHECKLIST_PADRAO: readonly ChecklistItemTemplate[] = [
-  { id: "agua-completa",      descricao: "Beber toda a água do dia" },
-  { id: "dormir-7h",          descricao: "Dormir pelo menos 7 horas" },
-  { id: "sem-pular-refeicao", descricao: "Não pular nenhuma refeição" },
-  { id: "suplementacao",      descricao: "Tomar creatina e vitaminas" },
-]
 
 // ADR-0010: hydration target is fixed at 35 ml/kg — does not vary by training or JJ day.
 const ML_POR_KG_HIDRATACAO = 35
@@ -52,8 +46,9 @@ export function montarConteudoDoPlano(entrada: EntradaMontagem): ConteudoDoPlano
     macros,
     objetivo,
     peso_kg,
-    dias_treino = DIAS_TREINO_PADRAO,
-    dias_jj     = DIAS_JJ_PADRAO,
+    dias_treino              = DIAS_TREINO_PADRAO,
+    dias_jj                  = DIAS_JJ_PADRAO,
+    perfis_refeicao_template = PERFIS_REFEICAO_PADRAO,
   } = entrada
 
   return {
@@ -63,7 +58,7 @@ export function montarConteudoDoPlano(entrada: EntradaMontagem): ConteudoDoPlano
     meta_carboidrato_diaria_g:  macros.carboidrato_g,
     meta_gordura_diaria_g:      macros.gordura_g,
     meta_agua_diaria_ml:        metaAgua(peso_kg),
-    refeicoes:                  montarRefeicoes(REFEICOES_CEDO, kcal_meta),
+    perfis_refeicao:            montarPerfisRefeicao(perfis_refeicao_template, kcal_meta),
     sessoes_treino:             montarSessoesTreino(dias_treino, dias_jj),
     checklist_template:         CHECKLIST_PADRAO,
   }

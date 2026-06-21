@@ -54,10 +54,19 @@ export {
   abdominal_bicicleta,
 } from "./exercicios"
 
-// Refeicao[] templates by day type — Motor de Geração picks the right one
-// when assembling a Plano for a given day's schedule.
-export { REFEICOES_CEDO, REFEICOES_TARDE, REFEICOES_SABADO } from "./refeicoes"
+// Refeicao templates by day type, and the default day-to-profile mapping.
+// Motor de Geração reads PERFIS_REFEICAO_PADRAO to build perfis_refeicao in the Plano.
+export {
+  REFEICOES_CEDO,
+  REFEICOES_TERCA,
+  REFEICOES_SEXTA,
+  REFEICOES_FIM_DE_SEMANA,
+  PERFIS_REFEICAO_PADRAO,
+} from "./refeicoes"
 
 // Week training split — Motor de Geração reads SESSOES_SEMANA to build SessaoTreino[].
 export { SESSOES_SEMANA } from "./treinos"
 export type { SessaoTreinoTemplate } from "./treinos"
+
+// Default checklist items — product-approved set for new Planos.
+export { CHECKLIST_PADRAO } from "./checklist"

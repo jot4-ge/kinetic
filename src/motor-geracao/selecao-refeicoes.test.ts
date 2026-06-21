@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest"
-import { selecionarOpcao, montarRefeicoes } from "./selecao-refeicoes"
-import { REFEICOES_CEDO } from "@/banco-opcoes"
-import type { Refeicao } from "@/types"
+import { selecionarOpcao, montarRefeicoes, montarPerfisRefeicao, resolverPerfilDia } from "./selecao-refeicoes"
+import { REFEICOES_CEDO, PERFIS_REFEICAO_PADRAO } from "@/banco-opcoes"
+import type { Refeicao, PerfilDeRefeicao } from "@/types"
 
 // ─── Fixtures mínimas ─────────────────────────────────────────────────────────
 
@@ -167,5 +167,120 @@ describe("montarRefeicoes", () => {
       const minKcal = Math.min(...REFEICOES_CEDO[i].opcoes.map(o => o.macros.kcal))
       expect(r.opcoes[0].macros.kcal).toBe(minKcal)
     })
+  })
+})
+
+// ─── resolverPerfilDia ────────────────────────────────────────────────────────
+
+const refeicaoFixture = (id: string): Refeicao => ({
+  id, nome: id, horario: "08:00",
+  opcoes: [{ id: "op1", descricao: "x", macros: { kcal: 400, proteina_g: 30, carboidrato_g: 50, gordura_g: 10 } }],
+})
+
+const PERFIS_FIXTURE: readonly PerfilDeRefeicao[] = [
+  { dias: ["Segunda", "Quarta", "Quinta"], refeicoes: [refeicaoFixture("cedo")] },
+  { dias: ["Terca"],                       refeicoes: [refeicaoFixture("terca")] },
+  { dias: ["Sexta"],                       refeicoes: [refeicaoFixture("sexta")] },
+  { dias: ["Sabado", "Domingo"],           refeicoes: [refeicaoFixture("fds")] },
+]
+
+describe("resolverPerfilDia", () => {
+  it("resolve Segunda para o perfil CEDO", () => {
+    expect(resolverPerfilDia(PERFIS_FIXTURE, "Segunda")?.refeicoes[0].id).toBe("cedo")
+  })
+
+  it("resolve Quarta para o perfil CEDO", () => {
+    expect(resolverPerfilDia(PERFIS_FIXTURE, "Quarta")?.refeicoes[0].id).toBe("cedo")
+  })
+
+  it("resolve Quinta para o perfil CEDO", () => {
+    expect(resolverPerfilDia(PERFIS_FIXTURE, "Quinta")?.refeicoes[0].id).toBe("cedo")
+  })
+
+  it("resolve Terca para o perfil exclusivo de Terça", () => {
+    expect(resolverPerfilDia(PERFIS_FIXTURE, "Terca")?.refeicoes[0].id).toBe("terca")
+  })
+
+  it("resolve Sexta para o perfil exclusivo de Sexta", () => {
+    expect(resolverPerfilDia(PERFIS_FIXTURE, "Sexta")?.refeicoes[0].id).toBe("sexta")
+  })
+
+  it("resolve Sabado para o perfil FIM_DE_SEMANA", () => {
+    expect(resolverPerfilDia(PERFIS_FIXTURE, "Sabado")?.refeicoes[0].id).toBe("fds")
+  })
+
+  it("resolve Domingo para o perfil FIM_DE_SEMANA", () => {
+    expect(resolverPerfilDia(PERFIS_FIXTURE, "Domingo")?.refeicoes[0].id).toBe("fds")
+  })
+
+  it("retorna undefined para dia sem perfil", () => {
+    const perfisParciais: readonly PerfilDeRefeicao[] = [
+      { dias: ["Segunda"], refeicoes: [] },
+    ]
+    expect(resolverPerfilDia(perfisParciais, "Terca")).toBeUndefined()
+  })
+
+  it("usando PERFIS_REFEICAO_PADRAO, todos os 7 dias têm exatamente um perfil", () => {
+    const diasSemana: readonly ["Segunda","Terca","Quarta","Quinta","Sexta","Sabado","Domingo"] =
+      ["Segunda","Terca","Quarta","Quinta","Sexta","Sabado","Domingo"]
+    diasSemana.forEach(dia => {
+      expect(resolverPerfilDia(PERFIS_REFEICAO_PADRAO, dia)).toBeDefined()
+    })
+  })
+})
+
+// ─── montarPerfisRefeicao ─────────────────────────────────────────────────────
+
+describe("montarPerfisRefeicao", () => {
+  it("preserva o número de perfis do template", () => {
+    const resultado = montarPerfisRefeicao(PERFIS_REFEICAO_PADRAO, 2508)
+    expect(resultado.length).toBe(PERFIS_REFEICAO_PADRAO.length)
+  })
+
+  it("preserva o array dias de cada perfil", () => {
+    const resultado = montarPerfisRefeicao(PERFIS_REFEICAO_PADRAO, 2508)
+    resultado.forEach((perfil, i) => {
+      expect(perfil.dias).toEqual(PERFIS_REFEICAO_PADRAO[i].dias)
+    })
+  })
+
+  it("cada refeição em cada perfil tem exatamente 1 opção selecionada", () => {
+    const resultado = montarPerfisRefeicao(PERFIS_REFEICAO_PADRAO, 2508)
+    resultado.forEach(perfil => {
+      perfil.refeicoes.forEach(r => expect(r.opcoes.length).toBe(1))
+    })
+  })
+
+  it("perfil CEDO (Seg/Qua/Qui) tem 6 refeições", () => {
+    const resultado = montarPerfisRefeicao(PERFIS_REFEICAO_PADRAO, 2508)
+    const cedo = resultado.find(p => p.dias.includes("Segunda"))!
+    expect(cedo.refeicoes.length).toBe(6)
+  })
+
+  it("perfil TERCA tem 4 refeições e não tem pré-treino", () => {
+    const resultado = montarPerfisRefeicao(PERFIS_REFEICAO_PADRAO, 2508)
+    const terca = resultado.find(p => p.dias.includes("Terca"))!
+    expect(terca.refeicoes.length).toBe(4)
+    expect(terca.refeicoes.map(r => r.id)).not.toContain("pre-treino")
+  })
+
+  it("perfil SEXTA tem 5 refeições e inclui pré-treino", () => {
+    const resultado = montarPerfisRefeicao(PERFIS_REFEICAO_PADRAO, 2508)
+    const sexta = resultado.find(p => p.dias.includes("Sexta"))!
+    expect(sexta.refeicoes.length).toBe(5)
+    expect(sexta.refeicoes.map(r => r.id)).toContain("pre-treino")
+  })
+
+  it("perfil FIM_DE_SEMANA cobre Sab e Dom com 4 refeições", () => {
+    const resultado = montarPerfisRefeicao(PERFIS_REFEICAO_PADRAO, 2508)
+    const fds = resultado.find(p => p.dias.includes("Sabado"))!
+    expect(fds.dias).toEqual(expect.arrayContaining(["Sabado", "Domingo"]))
+    expect(fds.refeicoes.length).toBe(4)
+  })
+
+  it("é determinístico: mesmos inputs → mesmo output", () => {
+    const r1 = montarPerfisRefeicao(PERFIS_REFEICAO_PADRAO, 2508)
+    const r2 = montarPerfisRefeicao(PERFIS_REFEICAO_PADRAO, 2508)
+    expect(JSON.stringify(r1)).toBe(JSON.stringify(r2))
   })
 })

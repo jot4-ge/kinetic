@@ -15,22 +15,20 @@
 //   - Almoço/Jantar "mix and match" (choose carb + choose protein) is
 //     modelled as a small set of representative complete-meal OpcaoDeRefeicao
 //     entries (e.g. "Arroz + Feijão + Frango"). Combinatorial explosion avoided.
-//   - "Refeição Livre" (free meal, sábado) is modelled with placeholder macros
-//     (~900 kcal) since it is intentionally variable. User logs actual macros
-//     via RegistroDeAderencia.registros_refeicao[].macros_reais on that day.
+//   - "Refeição Livre" (free meal, fim de semana) is modelled with placeholder
+//     macros (~900 kcal) since it is intentionally variable. User logs actual
+//     macros via RegistroDeAderencia.registros_refeicao[].macros_reais on that day.
 //   - Jantar shares the same Refeicao structure and options as Almoço for
 //     "dias cedo" since the legacy says "varie os itens do almoço".
-//   - Pre-treino for Sexta is included in REFEICOES_TARDE; Motor de Geração
-//     should omit it when building a Plano for Terça (no JJ that day).
+//   - REFEICOES_TARDE was split into REFEICOES_TERCA (no pré-treino) and
+//     REFEICOES_SEXTA (pré-treino JJ at 16:15). They share all slots except
+//     the pré-treino, which only applies on Sexta (JJ 17h).
 
-import type { Refeicao } from "@/types"
-
-// ─── Shared option building blocks ────────────────────────────────────────────
-// Some options repeat across day panels with identical data; defined once.
+import type { Refeicao, PerfilDeRefeicao } from "@/types"
 
 // ─── REFEICOES_CEDO — Seg / Qua / Qui ────────────────────────────────────────
 
-export const REFEICOES_CEDO: Refeicao[] = [
+export const REFEICOES_CEDO: readonly Refeicao[] = [
   {
     id: "cafe-da-manha",
     nome: "Café da manhã",
@@ -145,93 +143,108 @@ export const REFEICOES_CEDO: Refeicao[] = [
   },
 ]
 
-// ─── REFEICOES_TARDE — Ter / Sex ──────────────────────────────────────────────
-// Café da manhã is later (~08h30) and more substantial since there's no
-// early gym session. Pre-treino entry applies to Sexta only (JJ 17h);
-// Motor de Geração should omit it for Terça.
+// ─── Shared slots — Terça and Sexta ──────────────────────────────────────────
+// Defined once to avoid duplication; both REFEICOES_TERCA and REFEICOES_SEXTA
+// reference the same objects (readonly — safe to share).
 
-export const REFEICOES_TARDE: Refeicao[] = [
-  {
-    id: "cafe-da-manha",
-    nome: "Café da manhã",
-    horario: "08:30",
-    opcoes: [
-      {
-        id: "mingau-aveia-whey-fruta",
-        descricao: "Mingau: 55g aveia em flocos · 30g whey · 1 fruta fatiada · canela + adoçante",
-        macros: { kcal: 408, proteina_g: 31, carboidrato_g: 62, gordura_g: 6 },
-      },
-      {
-        id: "bolo-microondas",
-        descricao: "Bolo de microondas: 80g banana amassada · 1 ovo · 40g aveia · 30g whey (cobertura)",
-        macros: { kcal: 403, proteina_g: 35, carboidrato_g: 48, gordura_g: 10 },
-      },
-      {
-        id: "pao-queijo-frango-fruta",
-        descricao: "Pão francês · 20g queijo · 100g frango desfiado · 1 fruta",
-        macros: { kcal: 457, proteina_g: 42, carboidrato_g: 50, gordura_g: 10 },
-      },
-    ],
-  },
-  {
-    id: "lanche",
-    nome: "Lanche",
-    horario: "12:30",
-    opcoes: [
-      {
-        id: "iogurte-whey-fruta",
-        descricao: "200g iogurte zero gordura · 30g whey · 1 fruta",
-        macros: { kcal: 280, proteina_g: 35, carboidrato_g: 36, gordura_g: 2 },
-      },
-    ],
-  },
-  {
-    // Applies to Sexta only. Motor de Geração: omit this Refeicao for Terça.
-    id: "pre-treino",
-    nome: "Pré-treino",
-    horario: "16:15",
-    opcoes: [
-      {
-        id: "aveia-whey-fruta",
-        descricao: "40g aveia · 30g whey · 1 fruta (antes do JJ das 17h)",
-        macros: { kcal: 351, proteina_g: 29, carboidrato_g: 52, gordura_g: 5 },
-      },
-    ],
-  },
-  {
-    id: "almoco-jantar",
-    nome: "Almoço / Jantar",
-    horario: "18:00",
-    opcoes: [
-      {
-        id: "arroz-feijao-frango",
-        descricao: "Arroz branco (150g) · Feijão (100g) · Frango grelhado (150g) · Salada à vontade",
-        macros: { kcal: 520, proteina_g: 55, carboidrato_g: 57, gordura_g: 8 },
-      },
-      {
-        id: "arroz-feijao-carne",
-        descricao: "Arroz branco (150g) · Feijão (100g) · Carne bovina (150g) · Salada à vontade",
-        macros: { kcal: 482, proteina_g: 44, carboidrato_g: 57, gordura_g: 9 },
-      },
-    ],
-  },
-  {
-    id: "ceia",
-    nome: "Ceia",
-    horario: "21:00",
-    opcoes: [
-      {
-        id: "iogurte-whey-frutas",
-        descricao: "200g iogurte zero gordura · 30g whey · 1~2 frutas",
-        macros: { kcal: 324, proteina_g: 36, carboidrato_g: 48, gordura_g: 2 },
-      },
-    ],
-  },
+const tardeCafe: Refeicao = {
+  id: "cafe-da-manha",
+  nome: "Café da manhã",
+  horario: "08:30",
+  opcoes: [
+    {
+      id: "mingau-aveia-whey-fruta",
+      descricao: "Mingau: 55g aveia em flocos · 30g whey · 1 fruta fatiada · canela + adoçante",
+      macros: { kcal: 408, proteina_g: 31, carboidrato_g: 62, gordura_g: 6 },
+    },
+    {
+      id: "bolo-microondas",
+      descricao: "Bolo de microondas: 80g banana amassada · 1 ovo · 40g aveia · 30g whey (cobertura)",
+      macros: { kcal: 403, proteina_g: 35, carboidrato_g: 48, gordura_g: 10 },
+    },
+    {
+      id: "pao-queijo-frango-fruta",
+      descricao: "Pão francês · 20g queijo · 100g frango desfiado · 1 fruta",
+      macros: { kcal: 457, proteina_g: 42, carboidrato_g: 50, gordura_g: 10 },
+    },
+  ],
+}
+
+const tardeLanche: Refeicao = {
+  id: "lanche",
+  nome: "Lanche",
+  horario: "12:30",
+  opcoes: [
+    {
+      id: "iogurte-whey-fruta",
+      descricao: "200g iogurte zero gordura · 30g whey · 1 fruta",
+      macros: { kcal: 280, proteina_g: 35, carboidrato_g: 36, gordura_g: 2 },
+    },
+  ],
+}
+
+// Applies to Sexta only (JJ 17h). Not included in REFEICOES_TERCA.
+const tardePreTreino: Refeicao = {
+  id: "pre-treino",
+  nome: "Pré-treino",
+  horario: "16:15",
+  opcoes: [
+    {
+      id: "aveia-whey-fruta",
+      descricao: "40g aveia · 30g whey · 1 fruta (antes do JJ das 17h)",
+      macros: { kcal: 351, proteina_g: 29, carboidrato_g: 52, gordura_g: 5 },
+    },
+  ],
+}
+
+const tardeAlmocoJantar: Refeicao = {
+  id: "almoco-jantar",
+  nome: "Almoço / Jantar",
+  horario: "18:00",
+  opcoes: [
+    {
+      id: "arroz-feijao-frango",
+      descricao: "Arroz branco (150g) · Feijão (100g) · Frango grelhado (150g) · Salada à vontade",
+      macros: { kcal: 520, proteina_g: 55, carboidrato_g: 57, gordura_g: 8 },
+    },
+    {
+      id: "arroz-feijao-carne",
+      descricao: "Arroz branco (150g) · Feijão (100g) · Carne bovina (150g) · Salada à vontade",
+      macros: { kcal: 482, proteina_g: 44, carboidrato_g: 57, gordura_g: 9 },
+    },
+  ],
+}
+
+const tardeCeia: Refeicao = {
+  id: "ceia",
+  nome: "Ceia",
+  horario: "21:00",
+  opcoes: [
+    {
+      id: "iogurte-whey-frutas",
+      descricao: "200g iogurte zero gordura · 30g whey · 1~2 frutas",
+      macros: { kcal: 324, proteina_g: 36, carboidrato_g: 48, gordura_g: 2 },
+    },
+  ],
+}
+
+// ─── REFEICOES_TERCA — Sem treino, sem JJ ────────────────────────────────────
+
+export const REFEICOES_TERCA: readonly Refeicao[] = [
+  tardeCafe, tardeLanche, tardeAlmocoJantar, tardeCeia,
 ]
 
-// ─── REFEICOES_SABADO ─────────────────────────────────────────────────────────
+// ─── REFEICOES_SEXTA — JJ às 17h (pré-treino incluído) ───────────────────────
 
-export const REFEICOES_SABADO: Refeicao[] = [
+export const REFEICOES_SEXTA: readonly Refeicao[] = [
+  tardeCafe, tardeLanche, tardePreTreino, tardeAlmocoJantar, tardeCeia,
+]
+
+// ─── REFEICOES_FIM_DE_SEMANA — Sáb / Dom ─────────────────────────────────────
+// Sábado: academia à tarde + Refeição Livre no almoço.
+// Domingo: mesmo perfil alimentar (sem padrão próprio documentado — ADR-0012).
+
+export const REFEICOES_FIM_DE_SEMANA: readonly Refeicao[] = [
   {
     id: "cafe-da-manha",
     nome: "Café da manhã",
@@ -292,4 +305,15 @@ export const REFEICOES_SABADO: Refeicao[] = [
       },
     ],
   },
+]
+
+// ─── PERFIS_REFEICAO_PADRAO ───────────────────────────────────────────────────
+// Default day-to-profile mapping used by the Motor de Geração (ADR-0012).
+// Motor reads this constant and produces perfis_refeicao in the Plano.
+
+export const PERFIS_REFEICAO_PADRAO: readonly PerfilDeRefeicao[] = [
+  { dias: ["Segunda", "Quarta", "Quinta"], refeicoes: REFEICOES_CEDO         },
+  { dias: ["Terca"],                       refeicoes: REFEICOES_TERCA        },
+  { dias: ["Sexta"],                       refeicoes: REFEICOES_SEXTA        },
+  { dias: ["Sabado", "Domingo"],           refeicoes: REFEICOES_FIM_DE_SEMANA },
 ]

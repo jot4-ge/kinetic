@@ -1,4 +1,4 @@
-import type { Refeicao, OpcaoDeRefeicao } from "@/types"
+import type { Refeicao, OpcaoDeRefeicao, PerfilDeRefeicao, DiaDaSemana } from "@/types"
 
 // Selects the OpcaoDeRefeicao whose kcal is closest to kcal_alvo_slot.
 // Tiebreak rule: first occurrence in the opcoes array (Banco declaration order).
@@ -29,5 +29,27 @@ export function montarRefeicoes(
   return template.map(refeicao => ({
     ...refeicao,
     opcoes: [selecionarOpcao(refeicao, kcal_por_slot)],
+  }))
+}
+
+// Returns the PerfilDeRefeicao that covers the given day, or undefined if no
+// profile covers it. The UI calls this to resolve which meals to display today.
+export function resolverPerfilDia(
+  perfis: readonly PerfilDeRefeicao[],
+  dia: DiaDaSemana,
+): PerfilDeRefeicao | undefined {
+  return perfis.find(p => (p.dias as readonly string[]).includes(dia))
+}
+
+// Builds perfis_refeicao for the Plano by running montarRefeicoes on each
+// profile template. All profiles use the same kcal_meta (ADR-0011: equal
+// distribution per slot; each profile divides by its own n_refeicoes).
+export function montarPerfisRefeicao(
+  perfis_template: readonly PerfilDeRefeicao[],
+  kcal_meta: number,
+): readonly PerfilDeRefeicao[] {
+  return perfis_template.map(perfil => ({
+    dias:      perfil.dias,
+    refeicoes: montarRefeicoes(perfil.refeicoes, kcal_meta),
   }))
 }

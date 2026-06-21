@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest"
 import { montarConteudoDoPlano } from "./montar-plano"
 import type { EntradaMontagem } from "./montar-plano"
-import type { Macros } from "@/types"
+import type { Macros, PerfilDeRefeicao } from "@/types"
 
 // ─── Fixture: ResultadoNutricional típico (80kg, MuitoAtivo, Cutting) ─────────
 // Derivado do pipeline Etapa 1: TMB=1773.75, TDEE=3059.72, kcal_meta=2508.97
@@ -57,17 +57,27 @@ describe("montarConteudoDoPlano", () => {
     })
   })
 
-  describe("refeições", () => {
-    it("usa REFEICOES_CEDO como template canônico (6 refeições)", () => {
-      expect(plano.refeicoes.length).toBe(6)
+  describe("perfis de refeição (ADR-0012)", () => {
+    it("plano contém 4 perfis de dia", () => {
+      expect(plano.perfis_refeicao.length).toBe(4)
     })
 
-    it("cada refeição tem exatamente 1 opção selecionada", () => {
-      plano.refeicoes.forEach(r => expect(r.opcoes.length).toBe(1))
+    it("todos os 7 dias da semana têm exatamente um perfil", () => {
+      const diasCobertos = plano.perfis_refeicao.flatMap(p => [...p.dias])
+      expect(diasCobertos.length).toBe(7)
+      expect(new Set(diasCobertos).size).toBe(7)
     })
 
-    it("refeições têm os IDs esperados do template CEDO", () => {
-      const ids = plano.refeicoes.map(r => r.id)
+    it("Seg/Qua/Qui compartilham o perfil CEDO com 6 refeições", () => {
+      const perfilCedo = plano.perfis_refeicao.find(p => p.dias.includes("Segunda"))!
+      expect(perfilCedo).toBeDefined()
+      expect(perfilCedo.dias).toEqual(expect.arrayContaining(["Segunda", "Quarta", "Quinta"]))
+      expect(perfilCedo.refeicoes.length).toBe(6)
+    })
+
+    it("perfil CEDO tem os IDs esperados (cafe, lanche, almoco, pre-treino, jantar, ceia)", () => {
+      const perfilCedo = plano.perfis_refeicao.find(p => p.dias.includes("Segunda"))!
+      const ids = perfilCedo.refeicoes.map(r => r.id)
       expect(ids).toContain("cafe-da-manha")
       expect(ids).toContain("lanche")
       expect(ids).toContain("almoco")
@@ -76,9 +86,39 @@ describe("montarConteudoDoPlano", () => {
       expect(ids).toContain("ceia")
     })
 
-    it("kcal total das refeições é razoável (±300 kcal da meta)", () => {
-      const totalKcal = plano.refeicoes.reduce((acc, r) => acc + r.opcoes[0].macros.kcal, 0)
-      expect(Math.abs(totalKcal - 2508)).toBeLessThanOrEqual(300)
+    it("Terça tem perfil próprio com 4 refeições e sem pré-treino", () => {
+      const perfilTerca = plano.perfis_refeicao.find(p => p.dias.includes("Terca"))!
+      expect(perfilTerca).toBeDefined()
+      expect(perfilTerca.dias).toEqual(["Terca"])
+      expect(perfilTerca.refeicoes.length).toBe(4)
+      expect(perfilTerca.refeicoes.map(r => r.id)).not.toContain("pre-treino")
+    })
+
+    it("Sexta tem perfil próprio com 5 refeições e pré-treino JJ", () => {
+      const perfilSexta = plano.perfis_refeicao.find(p => p.dias.includes("Sexta"))!
+      expect(perfilSexta).toBeDefined()
+      expect(perfilSexta.dias).toEqual(["Sexta"])
+      expect(perfilSexta.refeicoes.length).toBe(5)
+      expect(perfilSexta.refeicoes.map(r => r.id)).toContain("pre-treino")
+    })
+
+    it("Sáb/Dom compartilham o perfil FIM_DE_SEMANA com 4 refeições", () => {
+      const perfilFDS = plano.perfis_refeicao.find(p => p.dias.includes("Sabado"))!
+      expect(perfilFDS).toBeDefined()
+      expect(perfilFDS.dias).toEqual(expect.arrayContaining(["Sabado", "Domingo"]))
+      expect(perfilFDS.refeicoes.length).toBe(4)
+    })
+
+    it("cada refeição em todos os perfis tem exatamente 1 opção selecionada", () => {
+      plano.perfis_refeicao.forEach(perfil => {
+        perfil.refeicoes.forEach(r => expect(r.opcoes.length).toBe(1))
+      })
+    })
+
+    it("kcal total do perfil CEDO é razoável (±300 kcal da meta)", () => {
+      const perfilCedo = plano.perfis_refeicao.find(p => p.dias.includes("Segunda"))!
+      const total = perfilCedo.refeicoes.reduce((acc, r) => acc + r.opcoes[0].macros.kcal, 0)
+      expect(Math.abs(total - 2508)).toBeLessThanOrEqual(300)
     })
   })
 
@@ -148,16 +188,18 @@ describe("montarConteudoDoPlano", () => {
       resultado.sessoes_treino.forEach(s => expect(s.tem_jj).toBe(false))
     })
 
-    it("Bulk com kcal maior seleciona opções de maior kcal", () => {
+    it("Bulk com kcal maior seleciona opções de maior kcal (comparando perfil CEDO)", () => {
       const bulk = montarConteudoDoPlano({
         ...ENTRADA_PADRAO,
         kcal_meta: 3200,
         objetivo: "Bulk",
         macros: { kcal: 3200, proteina_g: 144, carboidrato_g: 460, gordura_g: 64 },
       })
-      // Com 3200/6 = 533 kcal por slot, deve selecionar opções de maior kcal
-      const cuttingTotal = plano.refeicoes.reduce((a, r) => a + r.opcoes[0].macros.kcal, 0)
-      const bulkTotal    = bulk.refeicoes.reduce((a, r) => a + r.opcoes[0].macros.kcal, 0)
+      const totalKcalPerfil = (perfis: readonly PerfilDeRefeicao[], dia: string) =>
+        perfis.find(p => p.dias.includes(dia as never))
+              ?.refeicoes.reduce((a, r) => a + r.opcoes[0].macros.kcal, 0) ?? 0
+      const cuttingTotal = totalKcalPerfil(plano.perfis_refeicao, "Segunda")
+      const bulkTotal    = totalKcalPerfil(bulk.perfis_refeicao,  "Segunda")
       expect(bulkTotal).toBeGreaterThanOrEqual(cuttingTotal)
     })
   })

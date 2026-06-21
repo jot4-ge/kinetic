@@ -9,6 +9,7 @@ export {
   exercicioSchema,
   opcaoDeRefeicaoSchema,
   refeicaoSchema,
+  perfilDeRefeicaoSchema,
   opcaoDeExercicioSchema,
   slotDeExercicioSchema,
   sessaoTreinoSchema,

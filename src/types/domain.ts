@@ -123,6 +123,14 @@ export interface Refeicao {
   readonly opcoes: readonly OpcaoDeRefeicao[]
 }
 
+// Groups Refeicoes that share the same eating pattern for one or more days.
+// Symmetric to SessaoTreino (ADR-0012). Motor selects one OpcaoDeRefeicao per
+// slot; after generation each refeicao.opcoes.length === 1.
+export interface PerfilDeRefeicao {
+  readonly dias:      readonly DiaDaSemana[]
+  readonly refeicoes: readonly Refeicao[]
+}
+
 // ─── Training structure (embedded inside Plano) ────────────────────────────────
 // Symmetric to Refeicao/OpcaoDeRefeicao on the exercise side.
 
@@ -186,7 +194,7 @@ interface PlanoBase {
   readonly meta_gordura_diaria_g: number
   readonly meta_agua_diaria_ml: number
 
-  readonly refeicoes: readonly Refeicao[]
+  readonly perfis_refeicao: readonly PerfilDeRefeicao[]
   readonly sessoes_treino: readonly SessaoTreino[]
   readonly checklist_template: readonly ChecklistItemTemplate[]
 

@@ -11,7 +11,7 @@ import type {
   UsuarioId, PlanoId, ExercicioId, RegistroId,
   ISODate, ISOTimestamp,
   GrupoMuscular, DiaDaSemana, ObjetivoDePlano, FatorAtividade,
-  Exercicio, Macros, OpcaoDeRefeicao, Refeicao,
+  Exercicio, Macros, OpcaoDeRefeicao, Refeicao, PerfilDeRefeicao,
   OpcaoDeExercicio, SlotDeExercicio, SessaoTreino, ChecklistItemTemplate,
   PeriodoDeVigencia, PlanoAtivo, PlanoArquivado, Plano,
   Usuario,
@@ -98,6 +98,11 @@ export const refeicaoSchema = z.object({
   opcoes: z.array(opcaoDeRefeicaoSchema),
 }) satisfies z.ZodType<Refeicao>
 
+export const perfilDeRefeicaoSchema = z.object({
+  dias:      z.array(diaDaSemanaSchema).min(1),
+  refeicoes: z.array(refeicaoSchema).min(1),
+}) satisfies z.ZodType<PerfilDeRefeicao>
+
 // ─── Training structure ───────────────────────────────────────────────────────
 
 export const opcaoDeExercicioSchema = z.object({
@@ -145,7 +150,7 @@ const planoBaseShape = {
   meta_carboidrato_diaria_g: z.number().nonnegative(),
   meta_gordura_diaria_g: z.number().nonnegative(),
   meta_agua_diaria_ml: z.number().positive(),
-  refeicoes: z.array(refeicaoSchema),
+  perfis_refeicao: z.array(perfilDeRefeicaoSchema),
   sessoes_treino: z.array(sessaoTreinoSchema),
   checklist_template: z.array(checklistItemTemplateSchema),
   criado_em: isoTimestamp,
