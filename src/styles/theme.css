@@ -1,0 +1,155 @@
+/* ─── Kinetic design tokens ──────────────────────────────────────────────────
+   Fonte da verdade: docs/brand.md (ADR-0013). Só tokens + base — nenhum
+   componente. O que não está no brand book é decisão pendente; não inventar
+   valores aqui.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Inter:wght@400;500&display=swap');
+
+/* ─── Tokens independentes de tema ───────────────────────────────────────── */
+
+:root {
+  /* Tipografia (brand §5) */
+  --font-display: 'Cinzel', 'Times New Roman', serif;          /* wordmark e títulos de seção — nunca corpo/labels/botões */
+  --font-body:    'Inter', system-ui, -apple-system, sans-serif;
+  --font-data:    'JetBrains Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace; /* métricas — usar font-variant-numeric: tabular-nums */
+
+  --font-weight-regular:  400;
+  --font-weight-emphasis: 500; /* peso máximo do corpo — nunca 700+ */
+
+  --tracking-wordmark: 0.15em;
+  --tracking-tagline:  0.3em;
+
+  --text-size-min-meta: 12px; /* pisos de acessibilidade (brand §9) */
+  --text-size-min-body: 14px;
+
+  /* Espaçamento — escala base 4px; "generoso" (brand §8) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* Raios de borda — cards 8–12px (brand §8) */
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+
+  /* Motion — contido, 150–250ms, sem bounce (brand §8) */
+  --duration-fast: 150ms;
+  --duration-base: 200ms;
+  --duration-slow: 250ms;
+  --ease: cubic-bezier(0.25, 0, 0.35, 1);
+
+  /* Toque mínimo (brand §9) */
+  --touch-target-min: 44px;
+
+  /* Safe area (PWA bottom nav) */
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+
+  /* Cores semânticas de feedback (brand §4.3 — dessaturadas, nunca puras).
+     --feedback-erro é definido por tema nas paletas abaixo (validação de
+     formulário). sucesso/aviso continuam pendentes (brand §10). */
+}
+
+/* ─── Paleta light — "Mármore Carrara" (brand §4.1) ──────────────────────── */
+
+:root {
+  color-scheme: light;
+
+  --bg:          #F5F3EE; /* Carrara */
+  --bg-elevated: #ECEAE3; /* Veio */
+  --text:        #2C2A25; /* Escrita */
+  --text-muted:  #7C7870; /* Suporte */
+
+  --accent:      #C9A84C; /* Ouro — único acento; nunca decorativo */
+  --accent-text: #A07C1A; /* Ouro profundo — texto dourado sobre fundos claros (WCAG AA) */
+  --on-accent:   #2C2A25; /* texto sobre botão ouro — nunca branco puro */
+
+  --border-hairline: rgba(44, 42, 37, 0.12);
+
+  --feedback-erro: #93413D; /* vinho/bordô dessaturado — AA sobre Carrara */
+}
+
+/* ─── Paleta dark — "Negro profundo" (brand §4.2) ────────────────────────── */
+/* Não é inversão do light: negro profundo com elementos emergindo da
+   escuridão. Blocos duplicados de propósito — o mesmo conjunto vale para a
+   preferência do sistema e para o toggle manual via data-theme. */
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+
+    --bg:          #0A0806; /* Negro — NÃO cinza escuro genérico */
+    --bg-elevated: #171411; /* Veio escuro */
+    --text:        #E8E5DE; /* Escrita clara */
+    --text-muted:  #8A867E; /* Suporte escuro */
+
+    --accent:      #C9A84C; /* Ouro — idêntico ao light */
+    --accent-text: #C9A84C; /* sobre fundo negro o ouro já tem contraste */
+    --on-accent:   #2C2A25;
+
+    --border-hairline: rgba(232, 229, 222, 0.10);
+
+    --feedback-erro: #D68B85; /* vinho/bordô claro dessaturado — AA sobre Negro */
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg:          #0A0806;
+  --bg-elevated: #171411;
+  --text:        #E8E5DE;
+  --text-muted:  #8A867E;
+
+  --accent:      #C9A84C;
+  --accent-text: #C9A84C;
+  --on-accent:   #2C2A25;
+
+  --border-hairline: rgba(232, 229, 222, 0.10);
+
+  --feedback-erro: #D68B85;
+}
+
+/* ─── Base reset ─────────────────────────────────────────────────────────── */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background:  var(--bg);
+  color:       var(--text);
+  font-family: var(--font-body);
+  font-weight: var(--font-weight-regular);
+  font-size:   15px;
+  line-height: 1.6;
+  min-height:  100vh;
+  overscroll-behavior: none;
+}
+
+/* prefers-reduced-motion respeitado — nenhuma transição essencial (brand §9) */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-base: 0ms;
+    --duration-slow: 0ms;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+}

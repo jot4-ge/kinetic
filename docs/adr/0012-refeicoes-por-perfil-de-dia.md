@@ -1,0 +1,7 @@
+# Refeições do Plano são organizadas por Perfil de Dia, não como lista única
+
+O Banco de Opções contém quatro perfis de refeição distintos: CEDO (Seg/Qua/Qui — 6 slots, academia matutina); TERCA (4 slots, sem treino e sem JJ); SEXTA (5 slots, pré-treino JJ às 17h incluído); FIM_DE_SEMANA (Sáb/Dom — 4 slots, academia à tarde e Refeição Livre). Domingo herda o perfil de fim de semana — não há padrão alimentar próprio documentado para ele. Modelar o Plano com um único `refeicoes[]` força todos os dias a seguir o mesmo cardápio CEDO, o que produz horários, composição e número de Refeições incorretos para Ter, Sex, Sáb e Dom.
+
+O Plano passa a armazenar `perfis_refeicao: readonly PerfilDeRefeicao[]`, onde cada `PerfilDeRefeicao` agrupa os dias que compartilham o mesmo padrão de Refeições e o array já selecionado pelo Motor (exatamente uma OpcaoDeRefeicao por slot). A UI resolve qual Perfil exibir com `resolverPerfilDia(perfis, diaAtual)`. Esse modelo é simétrico ao de `sessoes_treino[]`, que organiza treinos por dia da semana. O Plano permanece auto-contido (ADR-0003) — a UI não depende do Banco em tempo de render.
+
+Rejeitamos manter o tipo simples (`refeicoes: Refeicao[]`) e resolver na camada de geração porque não há como entregar dados corretos por dia à UI sem ou duplicar os quatro perfis como sete entradas separadas (redundância desnecessária no IndexedDB) ou fazer a UI consultar o Banco diretamente (viola ADR-0007).

@@ -1,0 +1,310 @@
+Index · HTML
+Copiar
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0f0f0f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Rotina Sync">
+  <title>Plano João Gui — Dieta & Treino</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+ 
+<div class="hero">
+  <!-- FOTOS -->
+  <div class="hero-photos">
+    <img class="hero-photo" src="foto-frente.jpg" alt="João Gui — frente">
+    <div class="hero-photo-divider"></div>
+    <img class="hero-photo" src="foto-costas.jpg" alt="João Gui — costas">
+  </div>
+
+  <!-- CONTEÚDO -->
+  <div class="hero-content">
+    <div class="hero-tag">Plano Personalizado · 2026</div>
+    <div class="hero-name">JOÃO GUI</div>
+    <div class="hero-sub">Dieta · Treino · Hidratação · Grade UnB</div>
+    <div class="hero-chips">
+      <span class="chip green" id="chip-meta">Meta: 73~74kg</span>
+      <span class="chip blue">Atual: 81kg · 1,70m</span>
+      <span class="chip">6x/semana</span>
+      <span class="chip">JJ Seg · Qua · Sex</span>
+      <span class="chip">~1850 kcal</span>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-label">Progresso até a meta <span id="prog-pct">0%</span></div>
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="prog-bar" style="width:0%"></div></div>
+      <div class="progress-ends"><span>81kg (início)</span><span>73~74kg (meta)</span></div>
+      <div class="peso-row">
+        <input type="number" id="peso-input" placeholder="Peso atual (kg)" step="0.1" min="60" max="90" inputmode="decimal">
+        <button onclick="updateProgress()">Atualizar</button>
+      </div>
+    </div>
+  </div>
+</div>
+ 
+<div class="main-wrap">
+<div class="main">
+ 
+<!-- ═══════════════ ALIMENTAÇÃO ═══════════════ -->
+<div class="section active" id="sec-alimentacao">
+  <div class="sec-title">Alimentação</div>
+  <div class="sec-sub">~1850 kcal/dia · déficit para perda de gordura preservando músculo</div>
+ 
+  <div class="macro-grid">
+    <div class="macro-card"><div class="macro-l">Calorias</div><div class="macro-v">1850<span class="macro-u"> kcal</span></div></div>
+    <div class="macro-card"><div class="macro-l">Proteína</div><div class="macro-v">155<span class="macro-u"> g</span></div></div>
+    <div class="macro-card"><div class="macro-l">Carboidrato</div><div class="macro-v">215<span class="macro-u"> g</span></div></div>
+    <div class="macro-card"><div class="macro-l">Gordura</div><div class="macro-v">30<span class="macro-u"> g</span></div></div>
+  </div>
+ 
+  <div class="alert alert-green">Déficit ~350kcal/dia → perda estimada de 1,2~1,5kg/mês. Meta em ~4 meses.</div>
+  <div class="alert alert-blue">Chiclete sem açúcar: liberado! Controla a fome. Limite de 3~5/dia.</div>
+ 
+  <div class="day-tabs" id="meal-tabs">
+    <div class="day-tab active" onclick="showMeals('cedo',this)">Seg / Qua / Qui</div>
+    <div class="day-tab" onclick="showMeals('tarde',this)">Ter / Sex</div>
+    <div class="day-tab" onclick="showMeals('sabado',this)">Sábado</div>
+  </div>
+ 
+  <!-- DIAS CEDO -->
+  <div class="day-panel active" id="meals-cedo">
+    <div class="meal-card">
+      <div class="meal-head"><div class="meal-head-left"><div class="meal-time">Ao acordar · ~06h30</div><div class="meal-title">Hidratação inicial</div></div><span class="meal-kcal">0 kcal</span></div>
+      <div class="meal-body"><div class="meal-opt"><div class="pills"><span class="pill">300~500ml água</span><span class="pill">Café puro (opcional)</span></div></div></div>
+    </div>
+    <div class="meal-card">
+      <div class="meal-head"><div class="meal-head-left"><div class="meal-time">Café da manhã · ~07h</div><div class="meal-title">Rápido — antes das 08h</div></div><span class="meal-kcal">~430 kcal</span></div>
+      <div class="meal-body">
+        <div class="meal-opt"><div class="meal-opt-label">Opção 1 — Shake (2 min, recomendado)</div><div class="pills"><span class="pill">150g banana</span><span class="pill">200ml leite desnatado</span><span class="pill">30g whey</span><span class="pill">20g aveia</span></div></div>
+        <div class="meal-opt"><div class="meal-opt-label">Opção 2 — Pão com ovos</div><div class="pills"><span class="pill">1 pão francês (50g)</span><span class="pill">3 ovos mexidos</span><span class="pill">1 fruta</span></div></div>
+      </div>
+      <div class="meal-tip">💡 Prepare o shake na garrafa shaker na noite anterior.</div>
+    </div>
+    <div class="meal-card">
+      <div class="meal-head"><div class="meal-head-left"><div class="meal-time">Lanche · ~11h30</div><div class="meal-title">Intervalo — levar de casa</div></div><span class="meal-kcal">~280 kcal</span></div>
+      <div class="meal-body">
+        <div class="meal-opt"><div class="meal-opt-label">Opção 1 — pote/garrafinha</div><div class="pills"><span class="pill">200g iogurte zero gordura</span><span class="pill">30g whey</span><span class="pill">1 fruta</span></div></div>
+        <div class="meal-opt"><div class="meal-opt-label">Opção 2 — lanche sólido</div><div class="pills"><span class="pill">1 pão francês</span><span class="pill">20g queijo</span><span class="pill">100g frango desfiado</span></div></div>
+        <div class="meal-opt"><div class="meal-opt-label">Opção 3 — overnight oats</div><div class="pills"><span class="pill">40g aveia</span><span class="pill">30g whey</span><span class="pill">150ml leite desnatado</span><span class="pill">1 fruta</span></div></div>
+      </div>
+      <div class="meal-tip">💡 Overnight oats: prepare na noite anterior num pote hermético.</div>
+    </div>
+    <div class="meal-card">
+      <div class="meal-head"><div class="meal-head-left"><div class="meal-time">Almoço · ~14h (Seg/Qua) · ~12h30 (Qui)</div><div class="meal-title">Refeição principal</div></div><span class="meal-kcal">~580 kcal</span></div>
+      <div class="meal-body">
+        <div class="meal-opt"><div class="meal-opt-label">Carboidrato — escolha 1</div><div class="pills"><span class="pill">Arroz 150g + Feijão 100g</span><span class="pill">Macarrão 170g</span><span class="pill">Batata inglesa 200g</span><span class="pill">Batata doce 180g</span><span class="pill">Mandioca 210g</span><span class="pill">Cuscuz 220g</span></div></div>
+        <div class="meal-opt"><div class="meal-opt-label">Proteína — escolha 1</div><div class="pills"><span class="pill">Frango grelhado 150g</span><span class="pill">Carne bovina 150g</span><span class="pill">Filé de peixe 150g</span><span class="pill">Lombo suíno 150g</span><span class="pill">Proteína de soja 200g</span></div></div>
+        <div class="meal-opt"><div class="meal-opt-label">Salada — à vontade</div><div class="pills"><span class="pill">Folhas + legumes crus/cozidos (mín. 100g)</span></div></div>
+        <div class="meal-opt"><div class="meal-opt-label">Opção rápida — hambúrguer caseiro</div><div class="pills"><span class="pill">Pão hambúrguer 50g</span><span class="pill">150g patinho moído</span><span class="pill">20g queijo</span><span class="pill">Alface/tomate</span><span class="pill">1 fruta</span></div></div>
+      </div>
+      <div class="meal-tip">💡 Seg/Qua: leve marmita. Qui: intervalo 12h~14h, tente comer em casa.</div>
+    </div>
+    <div class="meal-card">
+      <div class="meal-head"><div class="meal-head-left"><div class="meal-time">Pré-treino · ~45min antes</div><div class="meal-title">Antes do treino ou JJ</div></div><span class="meal-kcal">~200 kcal</span></div>
+      <div class="meal-body">
+        <div class="meal-opt"><div class="meal-opt-label">Dias com JJ às 17h → comer ~16h15</div><div class="pills"><span class="pill">40g aveia</span><span class="pill">30g whey</span><span class="pill">1 fruta</span></div></div>
+        <div class="meal-opt"><div class="meal-opt-label">Alternativa</div><div class="pills"><span class="pill">1 pão francês</span><span class="pill">30g whey com água</span></div></div>
+      </div>
+    </div>
+    <div class="meal-card">
+      <div class="meal-head"><div class="meal-head-left"><div class="meal-time">Jantar · pós-treino</div><div class="meal-title">Refeição pós-treino</div></div><span class="meal-kcal">~530 kcal</span></div>
+      <div class="meal-body">
+        <div class="meal-opt"><div class="meal-opt-label">Principal (varie os itens do almoço)</div><div class="pills"><span class="pill">Carboidrato</span><span class="pill">Proteína 150g</span><span class="pill">Salada à vontade</span></div></div>
+        <div class="meal-opt"><div class="meal-opt-label">Opção rápida (dias pesados)</div><div class="pills"><span class="pill">Hambúrguer caseiro</span><span class="pill">1 fruta</span></div></div>
+      </div>
+    </div>
+    <div class="meal-card">
+      <div class="meal-head"><div class="meal-head-left"><div class="meal-time">Ceia · antes de dormir</div><div class="meal-title">Proteína noturna</div></div><span class="meal-kcal">~180 kcal</span></div>
+      <div class="meal-body">
+        <div class="meal-opt"><div class="meal-opt-label">Ideal — caseína natural</div><div class="pills"><span class="pill">200g iogurte zero gordura</span><span class="pill">30g whey</span><span class="pill">1 fruta</span></div></div>
+        <div class="meal-opt"><div class="meal-opt-label">Mais leve</div><div class="pills"><span class="pill">200g iogurte desnatado</span><span class="pill">30g whey</span></div></div>
+      </div>
+      <div class="meal-tip">💡 Iogurte à noite = proteína de digestão lenta agindo durante o sono.</div>
+    </div>
+  </div>
+ 
+  <!-- DIAS TARDE -->
+  <div class="day-panel" id="meals-tarde">
+    <div class="meal-card">
+      <div class="meal-head"><div class="meal-head-left"><div class="meal-time">Café da manhã · ~08h~09h</div><div class="meal-title">Manhã livre — refeição reforçada</div></div><span class="meal-kcal">~450 kcal</span></div>
+      <div class="meal-body">
+        <div class="meal-opt"><div class="meal-opt-label">Opção 1 — mingau com whey e fruta</div><div class="pills"><span class="pill">55g aveia em flocos</span><span class="pill">30g whey</span><span class="pill">1 fruta fatiada</span><span class="pill">Canela + adoçante</span></div></div>
+        <div class="meal-opt"><div class="meal-opt-label">Opção 2 — bolo de microondas</div><div class="pills"><span class="pill">1 banana amassada (~80g)</span><span class="pill">1 ovo</span><span class="pill">40g aveia</span><span class="pill">30g whey (cobertura)</span></div></div>
+        <div class="meal-opt"><div class="meal-opt-label">Opção 3 — pão com queijo e frango</div><div class="pills"><span class="pill">1 pão francês</span><span class="pill">20g queijo</span><span class="pill">100g frango desfiado</span><span class="pill">1 fruta</span></div></div>
+      </div>
+    </div>
+    <div class="meal-card">
+      <div class="meal-head"><div class="meal-head-left"><div class="meal-time">Lanche · ~12h30</div><div class="meal-title">Antes das aulas da tarde</div></div><span class="meal-kcal">~280 kcal</span></div>
+      <div class="meal-body"><div class="meal-opt"><div class="pills"><span class="pill">200g iogurte zero gordura</span><span class="pill">30g whey</span><span class="pill">1 fruta</span></div></div></div>
+      <div class="meal-tip">💡 Coma antes das 14h para não treinar em jejum depois.</div>
+    </div>
+    <div class="meal-card">
+      <div class="meal-head"><div class="meal-head-left"><div class="meal-time">Pré-treino · Sexta ~16h15</div><div class="meal-title">Antes do JJ das 17h</div></div><span class="meal-kcal">~200 kcal</span></div>
+      <div class="meal-body"><div class="meal-opt"><div class="pills"><span class="pill">40g aveia</span><span class="pill">30g whey</span><span class="pill">1 fruta</span></div></div></div>
+    </div>
+    <div class="meal-card">
+      <div class="meal-head"><div class="meal-head-left"><div class="meal-time">Almoço/Jantar · ~18h (Terça)</div><div class="meal-title">Pós-aulas — refeição principal</div></div><span class="meal-kcal">~580 kcal</span></div>
+      <div class="meal-body"><div class="meal-opt"><div class="pills"><span class="pill">Carboidrato à escolha</span><span class="pill">Proteína 150g</span><span class="pill">Salada à vontade</span></div></div></div>
+      <div class="meal-tip">💡 Terça não tem JJ. Academia pela manhã ou após ~20h.</div>
+    </div>
+    <div class="meal-card">
+      <div class="meal-head"><div class="meal-head-left"><div class="meal-time">Ceia · ~21h</div><div class="meal-title">Proteína noturna</div></div><span class="meal-kcal">~180 kcal</span></div>
+      <div class="meal-body"><div class="meal-opt"><div class="pills"><span class="pill">200g iogurte zero gordura</span><span class="pill">30g whey</span><span class="pill">1~2 frutas</span></div></div></div>
+    </div>
+  </div>
+ 
+  <!-- SÁBADO -->
+  <div class="day-panel" id="meals-sabado">
+    <div class="alert alert-amber">1 refeição livre por semana — substitua 1 almoço ou jantar. Tente ficar abaixo de 1000kcal.</div>
+    <div class="meal-card">
+      <div class="meal-head"><div class="meal-head-left"><div class="meal-time">Café da manhã · ~09h</div><div class="meal-title">Refeição reforçada</div></div><span class="meal-kcal">~450 kcal</span></div>
+      <div class="meal-body"><div class="meal-opt"><div class="pills"><span class="pill">55g aveia + 30g whey + fruta</span><span class="pill">ou ovos + pão + fruta</span></div></div></div>
+    </div>
+    <div class="meal-card">
+      <div class="meal-head"><div class="meal-head-left"><div class="meal-time">Almoço · ~12h</div><div class="meal-title">Normal ou livre 🎉</div></div><span class="meal-kcal">~580 kcal</span></div>
+      <div class="meal-body">
+        <div class="meal-opt"><div class="meal-opt-label">Normal</div><div class="pills"><span class="pill">Carboidrato</span><span class="pill">Proteína 150g</span><span class="pill">Salada</span></div></div>
+        <div class="meal-opt"><div class="meal-opt-label">Livre (1x/semana)</div><div class="pills"><span class="pill">O que quiser · abaixo de 1000kcal</span></div></div>
+      </div>
+    </div>
+    <div class="meal-card">
+      <div class="meal-head"><div class="meal-head-left"><div class="meal-time">Lanche · ~15h30</div><div class="meal-title">Pré-treino sábado</div></div><span class="meal-kcal">~200 kcal</span></div>
+      <div class="meal-body"><div class="meal-opt"><div class="pills"><span class="pill">40g aveia</span><span class="pill">30g whey</span></div></div></div>
+    </div>
+    <div class="meal-card">
+      <div class="meal-head"><div class="meal-head-left"><div class="meal-time">Jantar + Ceia</div><div class="meal-title">Encerramento do dia</div></div><span class="meal-kcal">~700 kcal</span></div>
+      <div class="meal-body"><div class="meal-opt"><div class="pills"><span class="pill">Refeição padrão</span><span class="pill">+ iogurte/whey na ceia</span></div></div></div>
+    </div>
+  </div>
+</div>
+ 
+<!-- ═══════════════ HIDRATAÇÃO ═══════════════ -->
+<div class="section" id="sec-agua">
+  <div class="sec-title">Hidratação</div>
+  <div class="sec-sub">Meta: 3,0~3,5 litros/dia · mais nos dias de JJ</div>
+ 
+  <div class="water-counter">
+    <div class="water-counter-title">Copos bebidos hoje (250ml cada)</div>
+    <div class="water-glasses" id="glasses-wrap"></div>
+    <div class="water-label">Total: <span id="water-total">0ml</span> de 3000ml</div>
+    <button class="water-reset" onclick="resetWater()">Zerar contador</button>
+  </div>
+ 
+  <div class="alert alert-blue">Use uma garrafa de 700ml e esvazie 4~5x ao dia — mais fácil que contar ml.</div>
+  <div class="alert alert-amber">Dias de JJ: +300~400ml extra. O tatame faz você suar muito.</div>
+ 
+  <div class="water-grid">
+    <div class="wc"><div class="wc-icon">🌅</div><div class="wc-t">Ao acordar</div><div class="wc-d">300~500ml. Reidrata após o sono.</div></div>
+    <div class="wc"><div class="wc-icon">📚</div><div class="wc-t">Aulas</div><div class="wc-d">500~600ml. 1 copo por hora.</div></div>
+    <div class="wc"><div class="wc-icon">🍽️</div><div class="wc-t">Almoço</div><div class="wc-d">300ml durante ou após.</div></div>
+    <div class="wc"><div class="wc-icon">🏋️</div><div class="wc-t">Pré-treino</div><div class="wc-d">400~500ml antes de treinar.</div></div>
+    <div class="wc"><div class="wc-icon">🥋</div><div class="wc-t">Treino / JJ</div><div class="wc-d">500~700ml aos poucos.</div></div>
+    <div class="wc"><div class="wc-icon">🌙</div><div class="wc-t">Noite</div><div class="wc-d">400~500ml até dormir.</div></div>
+  </div>
+ 
+  <div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:8px">Cheque sua hidratação</div>
+  <div class="meal-card">
+    <div class="meal-body">
+      <div class="meal-opt" style="display:flex;align-items:center;gap:10px"><span style="width:13px;height:13px;border-radius:50%;background:#a8e063;flex-shrink:0;display:inline-block"></span><span style="font-size:12px;color:var(--text2)">Urina clara / amarelo pálido — hidratado ✓</span></div>
+      <div class="meal-opt" style="display:flex;align-items:center;gap:10px"><span style="width:13px;height:13px;border-radius:50%;background:#ffb74d;flex-shrink:0;display:inline-block"></span><span style="font-size:12px;color:var(--text2)">Urina amarelo escuro — beba água agora</span></div>
+      <div class="meal-opt" style="display:flex;align-items:center;gap:10px"><span style="width:13px;height:13px;border-radius:50%;background:#ef9a9a;flex-shrink:0;display:inline-block"></span><span style="font-size:12px;color:var(--text2)">Dor de cabeça sem motivo — pode ser desidratação</span></div>
+    </div>
+  </div>
+  <div class="alert alert-purple" style="margin-top:10px">Permitido: café sem açúcar · limonada sem açúcar · suco natural (200ml) · bebida zero (menor frequência).</div>
+</div>
+ 
+<!-- ═══════════════ VARIAÇÕES ═══════════════ -->
+<div class="section" id="sec-variacoes">
+  <div class="sec-title">Variações</div>
+  <div class="sec-sub">Para não enjoar das refeições · mantenha as quantidades próximas</div>
+ 
+  <div class="var-section-title" style="color:var(--green)">Café da manhã</div>
+  <div class="var-grid">
+    <div class="var-card"><div class="var-card-t">Tapioca com ovos</div><div class="pills"><span class="pill">2 tapiocas (50g goma)</span><span class="pill">3 ovos mexidos</span><span class="pill">20g queijo</span></div></div>
+    <div class="var-card"><div class="var-card-t">Pão com ovos e queijo</div><div class="pills"><span class="pill">1 pão francês</span><span class="pill">2 ovos</span><span class="pill">20g queijo</span><span class="pill">1 fruta</span></div></div>
+    <div class="var-card"><div class="var-card-t">Iogurte com granola</div><div class="pills"><span class="pill">200g iogurte zero</span><span class="pill">30g whey</span><span class="pill">20g granola</span><span class="pill">1 fruta</span></div></div>
+    <div class="var-card"><div class="var-card-t">Panqueca de aveia</div><div class="pills"><span class="pill">40g aveia</span><span class="pill">2 ovos</span><span class="pill">1 banana</span><span class="pill">canela</span></div></div>
+  </div>
+ 
+  <div class="var-section-title" style="color:var(--blue)">Lanches</div>
+  <div class="var-grid">
+    <div class="var-card"><div class="var-card-t">Overnight oats</div><div class="var-sub">Preparar na noite anterior</div><div class="pills"><span class="pill">40g aveia</span><span class="pill">150ml leite desnatado</span><span class="pill">30g whey</span><span class="pill">1 fruta picada</span></div></div>
+    <div class="var-card"><div class="var-card-t">Shake proteico</div><div class="pills"><span class="pill">30g whey</span><span class="pill">200ml leite desnatado</span><span class="pill">1 banana</span></div></div>
+    <div class="var-card"><div class="var-card-t">Tapioca com frango</div><div class="pills"><span class="pill">1 tapioca (30g goma)</span><span class="pill">80g frango desfiado</span><span class="pill">20g queijo</span></div></div>
+    <div class="var-card"><div class="var-card-t">Pão com atum</div><div class="pills"><span class="pill">1 pão francês</span><span class="pill">1 lata atum ao natural</span><span class="pill">limão + tempero</span></div></div>
+  </div>
+ 
+  <div class="var-section-title" style="color:var(--amber)">Proteínas (almoço/jantar)</div>
+  <div class="var-grid">
+    <div class="var-card"><div class="var-card-t">Frango</div><div class="pills"><span class="pill">grelhado</span><span class="pill">desfiado no molho</span><span class="pill">air fryer</span><span class="pill">cozido</span></div></div>
+    <div class="var-card"><div class="var-card-t">Carne bovina</div><div class="pills"><span class="pill">patinho moído</span><span class="pill">alcatra</span><span class="pill">carne de panela</span><span class="pill">bife</span></div></div>
+    <div class="var-card"><div class="var-card-t">Peixes</div><div class="pills"><span class="pill">tilápia</span><span class="pill">salmão</span><span class="pill">merluza</span><span class="pill">atum (lata)</span></div></div>
+    <div class="var-card"><div class="var-card-t">Ovos</div><div class="pills"><span class="pill">4 ovos mexidos</span><span class="pill">omelete com legumes</span></div></div>
+  </div>
+ 
+  <div class="var-section-title" style="color:var(--purple)">Carboidratos (almoço/jantar)</div>
+  <div class="var-grid">
+    <div class="var-card"><div class="var-card-t">Opções secas</div><div class="pills"><span class="pill">Arroz branco 150g</span><span class="pill">Arroz integral 140g</span><span class="pill">Cuscuz 220g</span><span class="pill">Macarrão 170g</span></div></div>
+    <div class="var-card"><div class="var-card-t">Tubérculos</div><div class="pills"><span class="pill">Batata inglesa 200g</span><span class="pill">Batata doce 180g</span><span class="pill">Mandioca 210g</span><span class="pill">Inhame 200g</span></div></div>
+  </div>
+ 
+  <div class="var-section-title" style="color:#fff">Porção de fruta</div>
+  <div class="fruit-grid">
+    <div class="fruit-item">🍌 1 banana</div><div class="fruit-item">🍎 1 maçã</div>
+    <div class="fruit-item">🍊 1 laranja</div><div class="fruit-item">🥭 1 manga</div>
+    <div class="fruit-item">🥝 2 kiwis</div><div class="fruit-item">🍇 100g uvas</div>
+    <div class="fruit-item">🫐 200g vermelhas</div><div class="fruit-item">🍉 250g melancia</div>
+    <div class="fruit-item">🍈 200g mamão</div><div class="fruit-item">🍍 200g abacaxi</div>
+    <div class="fruit-item">🫒 2 ameixas</div><div class="fruit-item">🍐 1 goiaba</div>
+  </div>
+</div>
+ 
+<!-- ═══════════════ TREINO ═══════════════ -->
+<div class="section" id="sec-treino">
+  <div class="sec-title">Treino</div>
+  <div class="sec-sub">Divisão ABC dupla · 6x/semana · marque os exercícios conforme faz</div>
+  <div class="alert alert-green">3~4 séries · 8~12 reps · descanso 60~90s entre séries · última série próxima da falha.</div>
+  <div class="alert alert-amber">Dias de JJ (Seg/Qua/Sex): cardio opcional, 10~15min leve no máximo.</div>
+  <div id="treino-list"></div>
+  <div class="alert alert-red" style="margin-top:12px">🛌 Domingo: descanso total. É quando o músculo cresce — não pule.</div>
+</div>
+ 
+<!-- ═══════════════ SEMANA ═══════════════ -->
+<div class="section" id="sec-semana">
+  <div class="sec-title">Sua Semana</div>
+  <div class="sec-sub">Grade da UnB + treinos + jiu-jitsu</div>
+  <div class="daily-section">
+    <div class="daily-title">Checklist do dia</div>
+    <div id="checklist"></div>
+    <button onclick="resetChecklist()" style="font-size:11px;color:var(--text3);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:underline;margin-top:4px">Zerar checklist</button>
+  </div>
+  <div id="week-days"></div>
+  <div class="alert alert-green" style="margin-top:12px">Mínimo 7h de sono · não pule refeições · refeição livre 1x/semana abaixo de 1000kcal.</div>
+  <div class="alert alert-blue">Perdeu uma refeição? Não compense. Continue normalmente na próxima.</div>
+</div>
+ 
+</div><!-- /main -->
+</div><!-- /main-wrap -->
+ 
+<!-- ── BOTTOM NAV ── -->
+<nav class="bottom-nav">
+  <button class="bnav-btn active" id="bnav-alimentacao" onclick="showSection('alimentacao',this)"><span class="icon">🥗</span><span class="label">Dieta</span></button>
+  <button class="bnav-btn" id="bnav-agua" onclick="showSection('agua',this)"><span class="icon">💧</span><span class="label">Água</span></button>
+  <button class="bnav-btn" id="bnav-variacoes" onclick="showSection('variacoes',this)"><span class="icon">🔄</span><span class="label">Variações</span></button>
+  <button class="bnav-btn" id="bnav-treino" onclick="showSection('treino',this)"><span class="icon">🏋️</span><span class="label">Treino</span></button>
+  <button class="bnav-btn" id="bnav-semana" onclick="showSection('semana',this)"><span class="icon">📅</span><span class="label">Semana</span></button>
+</nav>
+ 
+<div class="toast" id="toast"></div>
+ 
+<script src="script.js"></script>
+</body>
+</html>
