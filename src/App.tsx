@@ -1,18 +1,11 @@
-// Shell da aplicação. A rota "/" decide o destino (RotaRaiz); /onboarding é a
-// primeira tela de produto real; /hoje segue como placeholder até a fase 3.
+// Shell da aplicação. A rota "/" decide o destino (RotaRaiz); /onboarding e
+// /hoje são as telas de produto (fases 2 e 3).
 
 import { Route, Routes } from "react-router-dom"
 import { ThemeToggle } from "@/components/ThemeToggle"
 import { OnboardingPage } from "@/features/onboarding/OnboardingPage"
 import { RotaRaiz } from "@/features/onboarding/RotaRaiz"
-
-function Placeholder({ titulo }: { titulo: string }) {
-  return (
-    <section style={{ paddingTop: "var(--space-6)" }}>
-      <p style={{ color: "var(--text-muted)" }}>{titulo} em breve</p>
-    </section>
-  )
-}
+import { HojePage } from "@/features/hoje/HojePage"
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
@@ -56,7 +49,7 @@ function App() {
       <Routes>
         <Route path="/" element={<RotaRaiz />} />
         <Route path="/onboarding" element={<OnboardingPage />} />
-        <Route path="/hoje" element={<Placeholder titulo="Hoje" />} />
+        <Route path="/hoje" element={<HojePage />} />
       </Routes>
     </Shell>
   )

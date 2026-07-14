@@ -8,12 +8,13 @@
 // resultado. Nenhuma regra de domínio vive no componente.
 
 import type {
-  UsuarioId, PlanoId, ISODate, ISOTimestamp,
+  UsuarioId, PlanoId, ISOTimestamp,
   ObjetivoDePlano, FatorAtividade,
   Usuario, PlanoAtivo,
 } from "@/types"
 import type { EntradaCalculo } from "@/motor-geracao"
 import { gerarPlano } from "@/motor-geracao"
+import { formatarISODate } from "@/utils/data"
 
 // ─── Identidade na Camada 1 (ADR-0014) ───────────────────────────────────────
 // Camada 1 é single-user por design (contratos.ts: UsuarioRepositorio só expõe
@@ -141,13 +142,6 @@ export function validarFormulario(form: FormularioBruto): ResultadoValidacao {
 export interface DepsConstrucao {
   gerarId: () => string
   agora: () => Date
-}
-
-function formatarISODate(d: Date): ISODate {
-  const ano = d.getFullYear()
-  const mes = String(d.getMonth() + 1).padStart(2, "0")
-  const dia = String(d.getDate()).padStart(2, "0")
-  return `${ano}-${mes}-${dia}` as ISODate
 }
 
 export function construirUsuarioEPlano(
