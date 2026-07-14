@@ -1,5 +1,7 @@
 # Kinetic — Brand Book
 
+Ver também: brand-book.png (peça visual de referência)
+
 > Documento de referência visual do projeto. Toda decisão de UI (cor, tipografia,
 > espaçamento, imagem, componente) deve derivar deste documento. Se algo não está
 > definido aqui, é decisão pendente — pergunte antes de assumir.
