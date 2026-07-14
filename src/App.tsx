@@ -1,10 +1,10 @@
-// Shell da aplicação — fundação de UI. Ainda não há tela de produto: as rotas
-// /onboarding e /hoje são placeholders que as próximas fases substituem.
-// O shell existe para provar que os design tokens (theme.css / brand.md) e o
-// roteamento estão de pé nos dois modos de tema.
+// Shell da aplicação. A rota "/" decide o destino (RotaRaiz); /onboarding é a
+// primeira tela de produto real; /hoje segue como placeholder até a fase 3.
 
-import { Navigate, Route, Routes } from "react-router-dom"
+import { Route, Routes } from "react-router-dom"
 import { ThemeToggle } from "@/components/ThemeToggle"
+import { OnboardingPage } from "@/features/onboarding/OnboardingPage"
+import { RotaRaiz } from "@/features/onboarding/RotaRaiz"
 
 function Placeholder({ titulo }: { titulo: string }) {
   return (
@@ -54,8 +54,8 @@ function App() {
   return (
     <Shell>
       <Routes>
-        <Route path="/" element={<Navigate to="/onboarding" replace />} />
-        <Route path="/onboarding" element={<Placeholder titulo="Onboarding" />} />
+        <Route path="/" element={<RotaRaiz />} />
+        <Route path="/onboarding" element={<OnboardingPage />} />
         <Route path="/hoje" element={<Placeholder titulo="Hoje" />} />
       </Routes>
     </Shell>

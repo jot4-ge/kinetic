@@ -50,8 +50,9 @@
   /* Safe area (PWA bottom nav) */
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 
-  /* Cores semânticas de feedback (sucesso/erro/aviso): permitidas pelo brand
-     §4.3 mas sem valores definidos — decisão pendente (brand §10). */
+  /* Cores semânticas de feedback (brand §4.3 — dessaturadas, nunca puras).
+     --feedback-erro é definido por tema nas paletas abaixo (validação de
+     formulário). sucesso/aviso continuam pendentes (brand §10). */
 }
 
 /* ─── Paleta light — "Mármore Carrara" (brand §4.1) ──────────────────────── */
@@ -69,6 +70,8 @@
   --on-accent:   #2C2A25; /* texto sobre botão ouro — nunca branco puro */
 
   --border-hairline: rgba(44, 42, 37, 0.12);
+
+  --feedback-erro: #93413D; /* vinho/bordô dessaturado — AA sobre Carrara */
 }
 
 /* ─── Paleta dark — "Negro profundo" (brand §4.2) ────────────────────────── */
@@ -90,6 +93,8 @@
     --on-accent:   #2C2A25;
 
     --border-hairline: rgba(232, 229, 222, 0.10);
+
+    --feedback-erro: #D68B85; /* vinho/bordô claro dessaturado — AA sobre Negro */
   }
 }
 
@@ -106,6 +111,8 @@
   --on-accent:   #2C2A25;
 
   --border-hairline: rgba(232, 229, 222, 0.10);
+
+  --feedback-erro: #D68B85;
 }
 
 /* ─── Base reset ─────────────────────────────────────────────────────────── */
