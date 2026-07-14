@@ -1,4 +1,4 @@
-# Rotina Sync
+# Kinetic
 
 Daily logging PWA for tracking training adherence, diet, and hydration. Built for a 6x/week gym split with jiu-jitsu on Mon/Wed/Fri and a cutting-phase diet.
 
@@ -18,7 +18,7 @@ src/
   persistencia/    Repository contracts (contratos.ts) + IDB adapter (TODO)
   motor-geracao/   Deterministic macro/plan calculation (TODO)
   banco-opcoes/    Curated exercise and meal options (TODO)
-  styles/          theme.css — Modo Caverna design tokens, no component CSS
+  styles/          theme.css — Kinetic design tokens (marble/black/gold, brand.md), no component CSS
   components/      Shared UI components (TODO)
   features/        Feature modules: dashboard, registro, progresso (TODO)
   hooks/           React hooks (TODO)
