@@ -22,3 +22,13 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Rascunhos e explorações descartáveis (decisão confirmada)
+.scratch/
+
+# Artefatos locais do Playwright MCP (screenshots, cache de sessão)
+.playwright-mcp/
+
+# Cache de bytecode Python (gerado localmente, específico da máquina/versão)
+__pycache__/
+*.pyc
