@@ -1,11 +1,57 @@
-// Shell da aplicação. A rota "/" decide o destino (RotaRaiz); /onboarding e
-// /hoje são as telas de produto (fases 2 e 3).
+// Shell da aplicação. A rota "/" decide o destino (RotaRaiz); /onboarding, /hoje
+// e /perfil são as telas de produto.
 
-import { Route, Routes } from "react-router-dom"
+import { Route, Routes, useLocation, useNavigate } from "react-router-dom"
 import { ThemeToggle } from "@/components/ThemeToggle"
+import { BotaoIcone } from "@/components/BotaoIcone"
 import { OnboardingPage } from "@/features/onboarding/OnboardingPage"
 import { RotaRaiz } from "@/features/onboarding/RotaRaiz"
 import { HojePage } from "@/features/hoje/HojePage"
+import { PerfilPage } from "@/features/perfil/PerfilPage"
+
+// Ícones do header — traço fino, herdam currentColor (cor de texto, nunca ouro).
+function IconePerfil() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6" />
+    </svg>
+  )
+}
+
+function IconeVoltar() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M15 5l-7 7 7 7" />
+    </svg>
+  )
+}
+
+// Ação do header conforme a rota — padrão reutilizável de navegação para áreas
+// secundárias: /hoje expõe a entrada para /perfil; /perfil expõe o retorno.
+// Telas "pré-app" (raiz, onboarding) não têm ação secundária.
+function AcaoHeader() {
+  const { pathname } = useLocation()
+  const navigate = useNavigate()
+
+  if (pathname === "/hoje") {
+    return (
+      <BotaoIcone rotulo="Perfil" onClick={() => navigate("/perfil")}>
+        <IconePerfil />
+      </BotaoIcone>
+    )
+  }
+  if (pathname === "/perfil") {
+    return (
+      <BotaoIcone rotulo="Voltar" onClick={() => navigate("/hoje")}>
+        <IconeVoltar />
+      </BotaoIcone>
+    )
+  }
+  return null
+}
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
@@ -36,7 +82,10 @@ function Shell({ children }: { children: React.ReactNode }) {
         >
           KINETIC
         </span>
-        <ThemeToggle />
+        <div style={{ display: "flex", alignItems: "center", gap: "var(--space-2)" }}>
+          <AcaoHeader />
+          <ThemeToggle />
+        </div>
       </header>
       {children}
     </div>
@@ -50,6 +99,7 @@ function App() {
         <Route path="/" element={<RotaRaiz />} />
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route path="/hoje" element={<HojePage />} />
+        <Route path="/perfil" element={<PerfilPage />} />
       </Routes>
     </Shell>
   )
