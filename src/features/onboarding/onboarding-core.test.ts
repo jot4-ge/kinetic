@@ -2,6 +2,8 @@ import { describe, it, expect } from "vitest"
 import {
   validarFormulario,
   construirUsuarioEPlano,
+  resolverModo,
+  formularioDeUsuario,
   FORMULARIO_VAZIO,
   ID_USUARIO_LOCAL,
   FAIXA_PESO_KG,
@@ -10,6 +12,7 @@ import {
 } from "./onboarding-core"
 import { parseUsuario, parsePlano } from "@/types"
 import type { EntradaCalculo } from "@/motor-geracao"
+import type { Usuario, PlanoId, ISOTimestamp } from "@/types"
 
 // Formulário válido de referência — cada teste altera só o campo em foco.
 const formValido: FormularioBruto = {
@@ -88,6 +91,78 @@ describe("validarFormulario", () => {
     expect(r.erros.sexo).toBeDefined()
     expect(r.erros.fator_atividade).toBeDefined()
     expect(r.erros.objetivo).toBeDefined()
+  })
+})
+
+describe("resolverModo", () => {
+  function makeUsuario(plano_ativo_id: PlanoId | null): Usuario {
+    return {
+      id: ID_USUARIO_LOCAL,
+      nome: "Você",
+      email: "usuario@exemplo.invalid",
+      peso_kg: 80,
+      altura_cm: 178,
+      idade: 28,
+      sexo: "M",
+      fator_atividade: "MuitoAtivo",
+      objetivo: "Cutting",
+      plano_ativo_id,
+      criado_em: "2026-07-14T09:00:00.000Z" as ISOTimestamp,
+    }
+  }
+
+  it("é 'inicial' quando não há Usuario persistido (primeiro uso)", () => {
+    expect(resolverModo(null)).toBe("inicial")
+  })
+
+  it("é 'inicial' quando há Usuario mas sem Plano Ativo", () => {
+    expect(resolverModo(makeUsuario(null))).toBe("inicial")
+  })
+
+  it("é 'regeneracao' quando há Usuario com Plano Ativo", () => {
+    expect(resolverModo(makeUsuario("plano-1" as PlanoId))).toBe("regeneracao")
+  })
+})
+
+describe("formularioDeUsuario", () => {
+  const usuario: Usuario = {
+    id: ID_USUARIO_LOCAL,
+    nome: "Você",
+    email: "usuario@exemplo.invalid",
+    peso_kg: 82.5,
+    altura_cm: 178,
+    idade: 28,
+    sexo: "F",
+    fator_atividade: "ModeramenteAtivo",
+    objetivo: "Recomposicao",
+    plano_ativo_id: "plano-1" as PlanoId,
+    criado_em: "2026-07-14T09:00:00.000Z" as ISOTimestamp,
+  }
+
+  it("pré-preenche todos os campos do formulário a partir do Usuario", () => {
+    expect(formularioDeUsuario(usuario)).toEqual({
+      peso_kg: "82.5",
+      altura_cm: "178",
+      idade: "28",
+      sexo: "F",
+      fator_atividade: "ModeramenteAtivo",
+      objetivo: "Recomposicao",
+    })
+  })
+
+  it("é o inverso de validarFormulario nos campos: revalidar reproduz a biometria", () => {
+    const form = formularioDeUsuario(usuario)
+    const r = validarFormulario(form)
+    expect(r.ok).toBe(true)
+    if (!r.ok) return
+    expect(r.valor).toEqual({
+      peso_kg: 82.5,
+      altura_cm: 178,
+      idade: 28,
+      sexo: "F",
+      fator_atividade: "ModeramenteAtivo",
+      objetivo: "Recomposicao",
+    })
   })
 })
 

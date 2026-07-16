@@ -12,6 +12,16 @@ import type {
   ObjetivoDePlano, FatorAtividade,
   Usuario, PlanoAtivo,
 } from "@/types"
+
+// ─── Modo do formulário (derivado do estado persistido) ───────────────────────
+// O formulário de Plano tem dois modos, decididos NÃO pela URL mas pela
+// existência de um Plano Ativo do Usuário (impossível de dessincronizar):
+//   "inicial"      — primeiro uso, sem Usuario/Plano ainda: formulário vazio,
+//                    submissão gera direto.
+//   "regeneracao"  — já há um Plano Ativo: formulário pré-preenchido com os
+//                    dados atuais, submissão confirma o arquivamento (ADR-0002)
+//                    antes de gerar.
+export type ModoFormulario = "inicial" | "regeneracao"
 import type { EntradaCalculo } from "@/motor-geracao"
 import { gerarPlano } from "@/motor-geracao"
 import { formatarISODate } from "@/utils/data"
@@ -56,6 +66,29 @@ export const FORMULARIO_VAZIO: FormularioBruto = {
 }
 
 export type ErrosValidacao = Partial<Record<keyof FormularioBruto, string>>
+
+// Decide o modo do formulário a partir do estado persistido. Só é "regeneracao"
+// quando existe um Usuario COM Plano Ativo (plano_ativo_id não nulo); qualquer
+// outro caso (sem Usuario, ou Usuario sem Plano) é onboarding "inicial". Deriva
+// da realidade persistida — não pode conflitar com o primeiro uso.
+export function resolverModo(usuario: Usuario | null): ModoFormulario {
+  return usuario && usuario.plano_ativo_id ? "regeneracao" : "inicial"
+}
+
+// Mapeia os inputs canônicos do Usuario (fonte da verdade da biometria) de volta
+// para strings de formulário, para o modo "regeneracao" abrir pré-preenchido. Os
+// números viram string plana ("80"); os enums passam direto (são os próprios
+// valores das <option>). O inverso de validarFormulario no que toca aos campos.
+export function formularioDeUsuario(usuario: Usuario): FormularioBruto {
+  return {
+    peso_kg: String(usuario.peso_kg),
+    altura_cm: String(usuario.altura_cm),
+    idade: String(usuario.idade),
+    sexo: usuario.sexo,
+    fator_atividade: usuario.fator_atividade,
+    objetivo: usuario.objetivo,
+  }
+}
 
 export type ResultadoValidacao =
   | { ok: true; valor: EntradaCalculo }
