@@ -208,6 +208,103 @@ describe("PlanoRepositorio", () => {
   })
 })
 
+// ─── PlanoRepositorio.arquivarEAtivar — ADR-0002 (troca atômica) ─────────────
+
+describe("PlanoRepositorio.arquivarEAtivar", () => {
+  let adapter: CamadaDePersistencia
+  beforeEach(async () => { adapter = await freshAdapter() })
+
+  const iso = (s: string) => s as ISODate
+
+  // Plano Ativo com id e início explícitos (conteúdo do Motor, dono = uid).
+  function novoAtivo(id: string, inicio: string): PlanoAtivo {
+    return {
+      ...makePlanoAtivo(uid, conteudo, id),
+      vigencia: { status: "ativo", inicio: iso(inicio) },
+    }
+  }
+
+  it("primeiro Plano: sem Ativo prévio, apenas ativa `novo`", async () => {
+    await adapter.planos.arquivarEAtivar(novoAtivo("plano-1", "2026-07-16"), iso("2026-07-16"))
+
+    const ativo = await adapter.planos.buscarAtivo(uid)
+    expect(ativo?.id).toBe("plano-1")
+    expect(await adapter.planos.listarPorUsuario(uid)).toHaveLength(1)
+  })
+
+  it("segundo Plano: arquiva o anterior e ativa o novo; buscarAtivo retorna só o novo", async () => {
+    await adapter.planos.arquivarEAtivar(novoAtivo("plano-1", "2026-06-01"), iso("2026-06-01"))
+    await adapter.planos.arquivarEAtivar(novoAtivo("plano-2", "2026-07-16"), iso("2026-07-16"))
+
+    const ativo = await adapter.planos.buscarAtivo(uid)
+    expect(ativo?.id).toBe("plano-2")
+
+    const anterior = await adapter.planos.buscar("plano-1" as PlanoId)
+    expect(anterior?.vigencia.status).toBe("arquivado")
+    expect(anterior?.vigencia.inicio).toBe("2026-06-01") // início preservado (ADR-0002)
+    if (anterior?.vigencia.status === "arquivado") {
+      // fim = início do novo: Períodos de Vigência contíguos, sem lacuna
+      expect(anterior.vigencia.fim).toBe("2026-07-16")
+    }
+  })
+
+  it("invariante: após cada troca existe EXATAMENTE um Plano com status 'ativo'", async () => {
+    await adapter.planos.arquivarEAtivar(novoAtivo("plano-1", "2026-06-01"), iso("2026-06-01"))
+    await adapter.planos.arquivarEAtivar(novoAtivo("plano-2", "2026-06-15"), iso("2026-06-15"))
+    await adapter.planos.arquivarEAtivar(novoAtivo("plano-3", "2026-07-16"), iso("2026-07-16"))
+
+    const todos = await adapter.planos.listarPorUsuario(uid)
+    const ativos = todos.filter((p) => p.vigencia.status === "ativo")
+    expect(ativos).toHaveLength(1)
+    expect(ativos[0].id).toBe("plano-3")
+    expect(todos).toHaveLength(3) // os outros foram arquivados, não apagados
+  })
+
+  it("preserva o vínculo dos Registros ao Plano arquivado (ADR-0002)", async () => {
+    await adapter.planos.arquivarEAtivar(novoAtivo("plano-1", "2026-06-01"), iso("2026-06-01"))
+
+    const registro: RegistroDeAderencia = {
+      id: "reg-1" as RegistroId,
+      usuario_id: uid,
+      plano_id: "plano-1" as PlanoId, // vinculado ao plano-1 durante sua vigência
+      data: "2026-06-10" as ISODate,
+      editado_em: null,
+      registros_refeicao: [],
+      agua_consumida_ml: 2000,
+      treino_realizado: true,
+      jj_realizado: null,
+      checklist: {},
+      registros_exercicio: [],
+    }
+    await adapter.registros.salvar(registro)
+
+    // Gera um novo Plano → plano-1 é arquivado
+    await adapter.planos.arquivarEAtivar(novoAtivo("plano-2", "2026-07-16"), iso("2026-07-16"))
+
+    // O Registro continua vinculado ao plano-1 (agora arquivado)
+    const doArquivado = await adapter.registros.listarPorPlano("plano-1" as PlanoId)
+    expect(doArquivado).toHaveLength(1)
+    expect(doArquivado[0].id).toBe("reg-1")
+    // e não migrou para o novo Plano
+    expect(await adapter.registros.listarPorPlano("plano-2" as PlanoId)).toHaveLength(0)
+  })
+
+  it("não confunde usuários: arquivar o Ativo de um usuário não toca o de outro", async () => {
+    await adapter.planos.arquivarEAtivar(novoAtivo("p-u1", "2026-06-01"), iso("2026-06-01"))
+    await adapter.planos.arquivarEAtivar(
+      { ...novoAtivo("p-u2", "2026-06-01"), usuario_id: uid2 },
+      iso("2026-06-01"),
+    )
+    // regenera só o do uid
+    await adapter.planos.arquivarEAtivar(novoAtivo("p-u1b", "2026-07-16"), iso("2026-07-16"))
+
+    expect((await adapter.planos.buscarAtivo(uid))?.id).toBe("p-u1b")
+    expect((await adapter.planos.buscarAtivo(uid2))?.id).toBe("p-u2") // intacto
+    // o Ativo do uid2 nunca foi arquivado
+    expect((await adapter.planos.buscar("p-u2" as PlanoId))?.vigencia.status).toBe("ativo")
+  })
+})
+
 // ─── RegistroRepositorio — seams críticos ────────────────────────────────────
 
 describe("RegistroRepositorio", () => {
