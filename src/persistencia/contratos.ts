@@ -40,6 +40,17 @@ export interface PlanoRepositorio {
   // Equivalent to buscar(usuario.plano_ativo_id), extracted here to keep
   // the IDB index query logic inside the adapter.
   buscarAtivo(usuarioId: UsuarioId): Promise<PlanoAtivo | null>
+
+  // Atomically archive the user's current active plan (if any) and install
+  // `novo` as the sole active plan (ADR-0002). Both writes happen in one
+  // transaction, so there is never a persisted moment with zero or two active
+  // plans — the read of the current active happens inside that same transaction,
+  // not from a stale earlier read. `dataArquivamento` is the fim date stamped on
+  // the archived plan (device date, supplied by the caller). Handles the
+  // first-plan case (no existing active) by simply activating `novo`.
+  // Does NOT touch usuario.plano_ativo_id — buscarAtivo resolves via index, and
+  // the pointer is updated separately by the caller (self-healing).
+  arquivarEAtivar(novo: PlanoAtivo, dataArquivamento: ISODate): Promise<void>
 }
 
 // ─── ExercicioRepositorio ──────────────────────────────────────────────────

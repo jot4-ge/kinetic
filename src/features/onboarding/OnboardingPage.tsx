@@ -116,9 +116,15 @@ export function OnboardingPage() {
         gerarId: () => crypto.randomUUID(),
         agora: () => new Date(),
       })
-      // Salva o Plano antes do Usuario para o ponteiro plano_ativo_id nunca
-      // apontar para um Plano ainda inexistente.
-      await persistencia.planos.salvar(plano)
+      // ADR-0002: instala o novo Plano como Ativo e, se já houver um Ativo,
+      // arquiva-o atomicamente. A data de arquivamento do anterior é o próprio
+      // início do novo (vigencia.inicio = hoje): Períodos de Vigência contíguos,
+      // sem lacuna nem sobreposição. Serve também ao primeiro Plano (nada a
+      // arquivar → só ativa).
+      await persistencia.planos.arquivarEAtivar(plano, plano.vigencia.inicio)
+      // O ponteiro plano_ativo_id é atualizado depois, fora da transação de
+      // troca: buscarAtivo resolve pelo índice, não pelo ponteiro, então a
+      // invariante de "um único Plano Ativo" não depende desta escrita.
       await persistencia.usuarios.salvar(usuario)
       navigate("/hoje", { replace: true })
     } catch (erro) {

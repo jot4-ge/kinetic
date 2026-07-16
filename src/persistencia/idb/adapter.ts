@@ -17,6 +17,7 @@ import {
   parseExercicio,
   parseRegistroDeAderencia,
 } from "@/types"
+import { arquivarPlano } from "@/dominio/plano"
 import type { RotinaIDB } from "./db"
 
 function makeUsuarios(db: RotinaIDB): UsuarioRepositorio {
@@ -55,6 +56,30 @@ function makePlanos(db: RotinaIDB): PlanoRepositorio {
       const raws = await db.getAllFromIndex("planos", "por_usuario", usuarioId)
       const planos = raws.map(parsePlano)
       return planos.sort((a, b) => b.vigencia.inicio.localeCompare(a.vigencia.inicio))
+    },
+
+    // ADR-0002: troca atômica. Uma única transação readwrite sobre "planos"
+    // garante que arquivar o atual e ativar o novo comitam juntos — nunca há um
+    // estado persistido com zero ou dois Planos ativos. A leitura do atual
+    // acontece DENTRO da transação (não de um snapshot anterior), então a
+    // decisão de arquivar usa o estado corrente do store.
+    async arquivarEAtivar(novo: PlanoAtivo, dataArquivamento: ISODate) {
+      const tx = db.transaction("planos", "readwrite")
+      const atualRaw = await tx.store
+        .index("por_usuario_e_status")
+        .get([novo.usuario_id, "ativo"])
+
+      if (atualRaw) {
+        const atual = planoAtivoSchema.parse(atualRaw)
+        // Guarda de idempotência: se o "ativo" corrente já é o próprio `novo`
+        // (mesmo id), não faz sentido arquivá-lo contra si mesmo.
+        if (atual.id !== novo.id) {
+          await tx.store.put(arquivarPlano(atual, dataArquivamento))
+        }
+      }
+
+      await tx.store.put(novo)
+      await tx.done
     },
   }
 }
