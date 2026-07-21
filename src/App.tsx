@@ -8,6 +8,8 @@ import { OnboardingPage } from "@/features/onboarding/OnboardingPage"
 import { RotaRaiz } from "@/features/onboarding/RotaRaiz"
 import { HojePage } from "@/features/hoje/HojePage"
 import { PerfilPage } from "@/features/perfil/PerfilPage"
+import { HistoricoPage } from "@/features/historico/HistoricoPage"
+import { PlanoRegistrosPage } from "@/features/historico/PlanoRegistrosPage"
 
 // Ícones do header — traço fino, herdam currentColor (cor de texto, nunca ouro).
 function IconePerfil() {
@@ -30,7 +32,11 @@ function IconeVoltar() {
 }
 
 // Ação do header conforme a rota — padrão reutilizável de navegação para áreas
-// secundárias: /hoje expõe a entrada para /perfil; /perfil expõe o retorno.
+// secundárias: uma única ação por tela, sempre no header. /hoje expõe a entrada
+// para /perfil; as demais expõem o retorno, um salto por vez (master → detail):
+//   /perfil            → /hoje
+//   /historico         → /perfil   (entrada mora no card de Plano do Perfil)
+//   /historico/:plano  → /historico
 // Telas "pré-app" (raiz, onboarding) não têm ação secundária.
 function AcaoHeader() {
   const { pathname } = useLocation()
@@ -43,9 +49,15 @@ function AcaoHeader() {
       </BotaoIcone>
     )
   }
-  if (pathname === "/perfil") {
+
+  let voltarPara: string | null = null
+  if (pathname === "/perfil") voltarPara = "/hoje"
+  else if (pathname === "/historico") voltarPara = "/perfil"
+  else if (pathname.startsWith("/historico/")) voltarPara = "/historico"
+
+  if (voltarPara) {
     return (
-      <BotaoIcone rotulo="Voltar" onClick={() => navigate("/hoje")}>
+      <BotaoIcone rotulo="Voltar" onClick={() => navigate(voltarPara)}>
         <IconeVoltar />
       </BotaoIcone>
     )
@@ -100,6 +112,8 @@ function App() {
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route path="/hoje" element={<HojePage />} />
         <Route path="/perfil" element={<PerfilPage />} />
+        <Route path="/historico" element={<HistoricoPage />} />
+        <Route path="/historico/:planoId" element={<PlanoRegistrosPage />} />
       </Routes>
     </Shell>
   )

@@ -66,6 +66,28 @@ export function PerfilPage() {
         >
           Gerar novo plano
         </button>
+
+        {/* Consulta do histórico — ação secundária (outline, brand §8): o ouro
+            fica com o CTA primário. Planos arquivados e seus Registros vivem aqui. */}
+        <button
+          type="button"
+          onClick={() => navigate("/historico")}
+          style={{
+            width: "100%",
+            minHeight: "var(--touch-target-min)",
+            marginTop: "var(--space-3)",
+            padding: "var(--space-3) var(--space-4)",
+            background: "transparent",
+            color: "var(--text)",
+            border: "1px solid var(--border-hairline)",
+            borderRadius: "var(--radius-sm)",
+            fontFamily: "var(--font-body)",
+            fontSize: "15px",
+            cursor: "pointer",
+          }}
+        >
+          Ver histórico de planos
+        </button>
       </div>
     </section>
   )
