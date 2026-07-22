@@ -2,8 +2,10 @@ import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
 import { BrowserRouter } from "react-router-dom"
 import "./styles/theme.css"
+import "./styles/esculturas.css"
 import { createIdbAdapter, openDb } from "@/persistencia"
 import { PersistenciaProvider } from "@/providers/persistencia"
+import { Splash } from "@/components/Splash"
 import App from "./App.tsx"
 
 // Bootstrap: abre o banco e constrói o adapter ANTES do primeiro render, para
@@ -12,9 +14,23 @@ import App from "./App.tsx"
 
 const raiz = createRoot(document.getElementById("root")!)
 
+// Splash com guarda de ~150ms: só é renderizada se o bootstrap demorar mais que
+// isso (primeira carga semeia o IndexedDB). Em carga quente o openDb resolve
+// antes do timer, que é cancelado, e a splash nunca aparece — sem piscar e sem
+// atraso artificial (o app nunca espera pela splash).
+const ATRASO_SPLASH_MS = 150
+const timerSplash = setTimeout(() => {
+  raiz.render(
+    <StrictMode>
+      <Splash />
+    </StrictMode>,
+  )
+}, ATRASO_SPLASH_MS)
+
 try {
   const db = await openDb()
   const persistencia = createIdbAdapter(db)
+  clearTimeout(timerSplash)
 
   raiz.render(
     <StrictMode>
@@ -26,6 +42,7 @@ try {
     </StrictMode>,
   )
 } catch (erro) {
+  clearTimeout(timerSplash)
   console.error("Falha ao abrir a Camada de Persistência:", erro)
   raiz.render(
     <main

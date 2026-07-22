@@ -10,6 +10,7 @@
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react"
 import { Navigate, useParams } from "react-router-dom"
 import { usePersistencia } from "@/providers/persistencia-context"
+import { EstadoVazio } from "@/components/EstadoVazio"
 import type { Plano, RegistroDeAderencia, PlanoId, ObjetivoDePlano } from "@/types"
 import {
   ordenarRegistrosCronologico,
@@ -157,15 +158,16 @@ export function PlanoRegistrosPage() {
             border: "1px solid var(--border-hairline)",
             borderRadius: "var(--radius-lg)",
             padding: "var(--space-6) var(--space-5)",
-            textAlign: "center",
           }}
         >
-          <p style={{ color: "var(--text)", marginBottom: "var(--space-2)" }}>Nenhum registro neste plano.</p>
-          <p style={{ color: "var(--text-muted)", fontSize: "13px" }}>
-            {vigencia.ativo
-              ? "Registre sua aderência na tela de hoje e ela aparece aqui."
-              : "Este plano foi arquivado sem registros de aderência."}
-          </p>
+          <EstadoVazio>
+            <p style={{ color: "var(--text)", marginBottom: "var(--space-2)" }}>Nenhum registro neste plano.</p>
+            <p style={{ color: "var(--text-muted)", fontSize: "13px" }}>
+              {vigencia.ativo
+                ? "Registre sua aderência na tela de hoje e ela aparece aqui."
+                : "Este plano foi arquivado sem registros de aderência."}
+            </p>
+          </EstadoVazio>
         </div>
       ) : (
         registros.map((resumo) => (
