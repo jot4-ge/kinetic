@@ -1,0 +1,152 @@
+/* ─── Tratamento visual das esculturas (brand §7) ────────────────────────────
+   Fotografia tratada 100% por CSS — os arquivos .webp de origem não são
+   editados. Os valores de filtro/máscara/grão são a direção aprovada; ajuste
+   fino é aceitável, a intensidade não.
+
+   - Splash: SEMPRE o tratamento escuro, independente do tema (é um momento à
+     parte). Fundo negro do brand (#0A0806).
+   - Estados vazios: intenso no dark (figura de alto contraste emergindo do
+     negro); sutil no light (marca discreta sobre o mármore Carrara). Segue o
+     mesmo padrão de três blocos do theme.css: default = light; @media dark
+     :not([data-theme='light']) = sistema escuro; [data-theme='dark'] = toggle.
+
+   Grão de filme: SVG feTurbulence inline como ::after, opacidade baixa. Sem
+   arquivo externo (brand §7.3 — performance). prefers-reduced-motion é coberto
+   pelos tokens de duração já zerados no theme.css.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+/* ─── Splash (sempre dark) ───────────────────────────────────────────────── */
+
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-6);
+  padding: var(--space-7) var(--space-6);
+  background: #0A0806; /* Negro do brand — hardcoded: a splash ignora o tema */
+  color: #E8E5DE;      /* Escrita clara — idem, tratamento fixo */
+}
+
+.splash__figura-wrap {
+  position: relative;
+  width: min(72vw, 300px);
+  line-height: 0;
+}
+
+.splash__figura {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* Direção aprovada para o dark. */
+  filter: grayscale(1) contrast(2.2) brightness(0.85);
+  /* A figura emerge do escuro em vez de estar colada sobre ele: máscara radial
+     centrada ~41% da altura, desvanecendo nas bordas. */
+  -webkit-mask-image: radial-gradient(ellipse 64% 60% at 50% 41%, #000 32%, rgba(0, 0, 0, 0.5) 62%, transparent 80%);
+  mask-image: radial-gradient(ellipse 64% 60% at 50% 41%, #000 32%, rgba(0, 0, 0, 0.5) 62%, transparent 80%);
+}
+
+/* Grão de filme sobre a figura da splash. */
+.splash__figura-wrap::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 140px 140px;
+  opacity: 0.07;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+.splash__marca {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.splash__wordmark {
+  font-family: var(--font-display);
+  font-size: 40px;
+  font-weight: 500;
+  letter-spacing: var(--tracking-wordmark);
+  color: #E8E5DE;
+}
+
+.splash__tagline {
+  font-family: var(--font-display);
+  font-size: 12px;
+  letter-spacing: var(--tracking-tagline);
+  text-transform: lowercase;
+  color: #C9A84C; /* Ouro — sempre, sem variar por tema (é a splash) */
+}
+
+/* ─── Estados vazios ─────────────────────────────────────────────────────── */
+
+.estado-vazio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-4);
+}
+
+.estado-vazio__figura-wrap {
+  position: relative;
+  width: 150px;
+  line-height: 0;
+}
+
+.estado-vazio__figura {
+  display: block;
+  width: 100%;
+  height: auto;
+  -webkit-mask-image: radial-gradient(ellipse 66% 64% at 50% 42%, #000 34%, rgba(0, 0, 0, 0.45) 64%, transparent 82%);
+  mask-image: radial-gradient(ellipse 66% 64% at 50% 42%, #000 34%, rgba(0, 0, 0, 0.45) 64%, transparent 82%);
+}
+
+/* Grão dos estados vazios — presença mínima; some quase por completo no light. */
+.estado-vazio__figura-wrap::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 120px 120px;
+  pointer-events: none;
+}
+
+/* Light (default) — tratamento suave: contraste baixo, brilho levemente alto,
+   grão mínimo, a escultura como marca discreta sobre o mármore claro. */
+.estado-vazio__figura {
+  filter: grayscale(1) contrast(1.35) brightness(1.05);
+  opacity: 0.85;
+}
+.estado-vazio__figura-wrap::after {
+  opacity: 0.015;
+  mix-blend-mode: multiply;
+}
+
+/* Dark via preferência do sistema. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .estado-vazio__figura {
+    filter: grayscale(1) contrast(2.2) brightness(0.85);
+    opacity: 1;
+  }
+  :root:not([data-theme='light']) .estado-vazio__figura-wrap::after {
+    opacity: 0.06;
+    mix-blend-mode: screen;
+  }
+}
+
+/* Dark via toggle manual. */
+:root[data-theme='dark'] .estado-vazio__figura {
+  filter: grayscale(1) contrast(2.2) brightness(0.85);
+  opacity: 1;
+}
+:root[data-theme='dark'] .estado-vazio__figura-wrap::after {
+  opacity: 0.06;
+  mix-blend-mode: screen;
+}
