@@ -1,0 +1,433 @@
+/* ─── Tela "hoje" / RegistroDoDia — refinamento visual ───────────────────────
+   Personalidade Kinetic aplicada à jornada do dia (brand.md é a lei; o mockup
+   aprovado é o alvo). Princípios: número como protagonista (mono tabular),
+   ouro só em métrica/ação/progresso, Cinzel nos títulos, cards que emergem do
+   fundo, motion contido (150–250ms, sem bounce). Layout desktop = coluna
+   principal (refeições) + aside fixa (água/treino/checklist); mobile empilha.
+
+   Escopo: só esta tela nesta fase. Histórico/calendário/perfil ficam para depois.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+/* ─── Textura de mármore (brand §7.3) ──────────────────────────────────────
+   feTurbulence SVG inline (~0.4KB, sem arquivo externo) compondo com a cor de
+   fundo via background-blend-mode — no light escurece veios sutis sobre o
+   Carrara; no dark clareia veios quase imperceptíveis emergindo do Negro. Fica
+   só nos gutters da tela (os cards são opacos por cima) — nunca atrás de dados
+   densos (§7.2). Sem background-attachment fixed (evita jank no mobile). */
+
+.app-shell--ampla {
+  background-color: var(--bg);
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='160'%20height='160'%3E%3Cfilter%20id='n'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='0.9'%20numOctaves='2'%20seed='9'%20stitchTiles='stitch'/%3E%3CfeColorMatrix%20type='saturate'%20values='0'/%3E%3C/filter%3E%3Crect%20width='160'%20height='160'%20filter='url(%23n)'%20opacity='0.16'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-blend-mode: multiply; /* light: veios escuros sutis */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .app-shell--ampla {
+    background-blend-mode: screen; /* dark: veios claros emergindo do negro */
+  }
+}
+:root[data-theme="dark"] .app-shell--ampla {
+  background-blend-mode: screen;
+}
+:root[data-theme="light"] .app-shell--ampla {
+  background-blend-mode: multiply;
+}
+
+/* ─── Cabeçalho do dia ─────────────────────────────────────────────────────── */
+
+.hoje {
+  padding-top: var(--space-5);
+}
+
+.hoje__cabecalho {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.hoje__data {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.hoje__titulo {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--text);
+  text-wrap: balance;
+  margin: var(--space-1) 0 var(--space-4);
+}
+
+.hoje__erro {
+  color: var(--feedback-erro);
+  font-size: 13px;
+  margin-bottom: var(--space-4);
+}
+
+/* ─── Jornada do dia (progresso) ───────────────────────────────────────────── */
+
+.hoje__jornada {
+  margin-bottom: var(--space-5);
+}
+
+.hoje__jornada-texto {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.hoje__jornada-metrica {
+  color: var(--text);
+}
+
+.hoje__jornada-metrica b {
+  color: var(--accent-text);
+  font-weight: 500;
+}
+
+/* ─── Barra de progresso (jornada + água) ──────────────────────────────────── */
+
+.barra {
+  height: 6px;
+  background: var(--bg);
+  border: 1px solid var(--border-hairline);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.barra__preenchimento {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 999px;
+  transition: width var(--duration-base) ease;
+}
+
+/* ─── Grid: coluna principal + aside ───────────────────────────────────────── */
+
+.hoje__grid {
+  display: grid;
+  gap: var(--space-4);
+}
+
+@media (min-width: 768px) {
+  .hoje__grid {
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: var(--space-5);
+    align-items: start;
+  }
+
+  .hoje__aside {
+    position: sticky;
+    top: var(--space-5);
+  }
+}
+
+.hoje__secao-titulo {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--text);
+  margin-bottom: var(--space-3);
+}
+
+/* ─── Card de refeição ─────────────────────────────────────────────────────── */
+
+.refeicao {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-hairline);
+  border-left: 3px solid transparent;
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin-bottom: var(--space-3);
+  transition: opacity var(--duration-base) ease;
+}
+
+/* Cumprida — recompensa visual: eixo lateral dourado + kcal em ouro. */
+.refeicao--cumprida {
+  border-left-color: var(--accent);
+}
+
+/* Futura (hoje, horário ainda não chegou) — apagada, mas os botões seguem
+   funcionais (registro pode ser feito a qualquer hora; só o visual recua). */
+.refeicao--futura {
+  opacity: 0.7;
+}
+
+.refeicao__topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.refeicao__nome {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text);
+}
+
+.refeicao__check {
+  color: var(--accent);
+}
+
+.refeicao__horario {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.refeicao__desc-linha {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.refeicao__desc {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.refeicao__kcal {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-size: 15px;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.refeicao--cumprida .refeicao__kcal {
+  color: var(--accent-text);
+  font-weight: 500;
+}
+
+/* Macros densos: número protagonista, rótulo recolhido, numa linha mono. */
+.refeicao__macros {
+  margin-top: var(--space-3);
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+  display: flex;
+  gap: var(--space-4);
+}
+
+.refeicao__macro-num {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.refeicao__acoes {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+/* ─── Botões de status (Seguiu / Não seguiu) ───────────────────────────────── */
+
+.btn-status {
+  flex: 1;
+  min-height: var(--touch-target-min);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-hairline);
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background var(--duration-fast) ease, transform var(--duration-fast) ease,
+    border-color var(--duration-fast) ease, color var(--duration-fast) ease;
+}
+
+.btn-status:hover {
+  background: var(--bg);
+}
+
+.btn-status:active {
+  transform: translateY(1px);
+}
+
+.btn-status:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.btn-status--seguiu.is-ativo {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+  font-weight: var(--font-weight-emphasis);
+}
+
+.btn-status--nao.is-ativo {
+  background: var(--text-muted);
+  border-color: var(--text-muted);
+  color: var(--bg-elevated);
+  font-weight: var(--font-weight-emphasis);
+}
+
+/* ─── Card genérico (água, atividade, checklist) ───────────────────────────── */
+
+.cartao {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  margin-bottom: var(--space-4);
+}
+
+.cartao__titulo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--text);
+  margin-bottom: var(--space-4);
+}
+
+.icone-ouro {
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.cartao__vazio {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* ─── Água ─────────────────────────────────────────────────────────────────── */
+
+.agua__topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: var(--space-2);
+}
+
+.agua__valor {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--accent-text);
+}
+
+.agua__meta {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.agua__botoes {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.btn-agua {
+  flex: 1;
+  min-height: var(--touch-target-min);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-hairline);
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background var(--duration-fast) ease, transform var(--duration-fast) ease;
+}
+
+.btn-agua:hover {
+  background: var(--bg);
+}
+
+.btn-agua:active {
+  transform: translateY(1px);
+}
+
+.btn-agua:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.btn-agua--mais {
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+/* ─── Atividade / treino ───────────────────────────────────────────────────── */
+
+.treino__lista {
+  list-style: none;
+  margin-bottom: var(--space-4);
+}
+
+.treino__item {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--border-hairline);
+}
+
+.treino__ex {
+  color: var(--text);
+  font-size: 14px;
+}
+
+.treino__alt {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.treino__prescricao {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* ─── Checkbox rotulado (treino, JJ, checklist) ────────────────────────────── */
+
+.check-linha {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--touch-target-min);
+  cursor: pointer;
+  color: var(--text);
+}
+
+.check-linha__input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent);
+  cursor: pointer;
+  flex-shrink: 0;
+}

@@ -141,6 +141,26 @@ body {
   overscroll-behavior: none;
 }
 
+/* ─── App shell — coluna de conteúdo centrada ─────────────────────────────
+   Classe única de todas as rotas (antes era estilo inline no App.tsx). A
+   variante --ampla é usada só pelas telas de registro do dia (/hoje, /dia/:data):
+   no desktop (≥768px) abre a largura para o layout de duas colunas; no mobile é
+   idêntica à base. As demais rotas seguem estreitas, sem alteração visual. */
+
+.app-shell {
+  min-height: 100dvh;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-5);
+  padding-bottom: calc(var(--space-6) + var(--safe-bottom));
+}
+
+@media (min-width: 768px) {
+  .app-shell--ampla {
+    max-width: 960px;
+  }
+}
+
 /* prefers-reduced-motion respeitado — nenhuma transição essencial (brand §9) */
 @media (prefers-reduced-motion: reduce) {
   :root {
