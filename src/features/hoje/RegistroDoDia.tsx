@@ -6,8 +6,12 @@
 // derivam dela, e `retroativo` (data != hoje) decide o carimbo de editado_em
 // (ADR-0008/0015). A resolução de QUAL Plano/Registro usar é responsabilidade de
 // quem renderiza (HojePage / DiaPage). A lógica de domínio vive em hoje-core.ts.
+//
+// Apresentação em src/styles/tela-hoje.css: cabeçalho + "jornada do dia"
+// (progresso), coluna principal de refeições e aside de água/treino/checklist
+// (brand.md). Puramente visual — nenhuma regra de negócio mora aqui.
 
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react"
+import { useEffect, useRef, useState, type ReactNode } from "react"
 import { useNavigate } from "react-router-dom"
 import { usePersistencia } from "@/providers/persistencia-context"
 import { BotaoIcone } from "@/components/BotaoIcone"
@@ -42,129 +46,7 @@ const DIA_LABEL: Record<DiaDaSemana, string> = {
 
 const INCREMENTO_AGUA_ML = 250
 
-// ─── Estilos base (tokens do brand.md) ───────────────────────────────────────
-
-const estiloCard: CSSProperties = {
-  background: "var(--bg-elevated)",
-  border: "1px solid var(--border-hairline)",
-  borderRadius: "var(--radius-lg)",
-  padding: "var(--space-5)",
-  marginBottom: "var(--space-4)",
-}
-
-const estiloTituloSecao: CSSProperties = {
-  fontFamily: "var(--font-display)",
-  fontSize: "16px",
-  fontWeight: 500,
-  color: "var(--text)",
-  marginBottom: "var(--space-4)",
-  letterSpacing: "0.02em",
-}
-
-const estiloMono: CSSProperties = {
-  fontFamily: "var(--font-data)",
-  fontVariantNumeric: "tabular-nums",
-}
-
-function Card({ titulo, children }: { titulo: string; children: ReactNode }) {
-  return (
-    <section style={estiloCard}>
-      <h2 style={estiloTituloSecao}>{titulo}</h2>
-      {children}
-    </section>
-  )
-}
-
-function MacroBox({ valor_g, rotulo }: { valor_g: number; rotulo: string }) {
-  return (
-    <div
-      style={{
-        flex: 1,
-        textAlign: "center",
-        background: "var(--bg)",
-        borderRadius: "var(--radius-sm)",
-        padding: "var(--space-2) var(--space-1)",
-      }}
-    >
-      <div style={{ ...estiloMono, fontSize: "15px", color: "var(--text)" }}>{valor_g}g</div>
-      <div style={{ fontSize: "10px", letterSpacing: "0.1em", color: "var(--text-muted)" }}>
-        {rotulo}
-      </div>
-    </div>
-  )
-}
-
-function BotaoStatus({
-  ativo,
-  variante,
-  onClick,
-  children,
-}: {
-  ativo: boolean
-  variante: "seguiu" | "naoSeguiu"
-  onClick: () => void
-  children: ReactNode
-}) {
-  const fundoAtivo = variante === "seguiu" ? "var(--accent)" : "var(--text-muted)"
-  const corAtiva = variante === "seguiu" ? "var(--on-accent)" : "var(--bg-elevated)"
-  return (
-    <button
-      type="button"
-      aria-pressed={ativo}
-      onClick={onClick}
-      style={{
-        flex: 1,
-        minHeight: "var(--touch-target-min)",
-        padding: "var(--space-2) var(--space-3)",
-        borderRadius: "var(--radius-sm)",
-        border: "1px solid var(--border-hairline)",
-        background: ativo ? fundoAtivo : "transparent",
-        color: ativo ? corAtiva : "var(--text)",
-        fontFamily: "var(--font-body)",
-        fontWeight: ativo ? "var(--font-weight-emphasis)" : "var(--font-weight-regular)",
-        fontSize: "14px",
-        cursor: "pointer",
-      }}
-    >
-      {children}
-    </button>
-  )
-}
-
-function CheckboxLinha({
-  id,
-  rotulo,
-  marcado,
-  onChange,
-}: {
-  id: string
-  rotulo: string
-  marcado: boolean
-  onChange: (v: boolean) => void
-}) {
-  return (
-    <label
-      htmlFor={id}
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: "var(--space-3)",
-        minHeight: "var(--touch-target-min)",
-        cursor: "pointer",
-        color: "var(--text)",
-      }}
-    >
-      <input
-        id={id}
-        type="checkbox"
-        checked={marcado}
-        onChange={(e) => onChange(e.target.checked)}
-        style={{ width: "20px", height: "20px", accentColor: "var(--accent)", cursor: "pointer" }}
-      />
-      <span>{rotulo}</span>
-    </label>
-  )
-}
+// ─── Ícones (traço fino, herdam currentColor) ────────────────────────────────
 
 function IconeCalendario() {
   return (
@@ -176,16 +58,76 @@ function IconeCalendario() {
   )
 }
 
-const botaoAguaEstilo: CSSProperties = {
-  flex: 1,
-  minHeight: "var(--touch-target-min)",
-  borderRadius: "var(--radius-sm)",
-  border: "1px solid var(--border-hairline)",
-  background: "transparent",
-  color: "var(--text)",
-  fontFamily: "var(--font-data)",
-  fontSize: "14px",
-  cursor: "pointer",
+function IconeGota() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 3s6 6.4 6 11a6 6 0 0 1-12 0c0-4.6 6-11 6-11z" />
+    </svg>
+  )
+}
+
+function IconeHalter() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M6.5 8v8M4 10v4M17.5 8v8M20 10v4M6.5 12h11" />
+    </svg>
+  )
+}
+
+function IconeLista() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M9 6h11M9 12h11M9 18h11M4 6l1.4 1.4L7 5.4" />
+    </svg>
+  )
+}
+
+function IconeCheck() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M4 12l5 5L20 6" />
+    </svg>
+  )
+}
+
+// ─── Componentes de apresentação ─────────────────────────────────────────────
+
+function CheckboxLinha({
+  id, rotulo, marcado, onChange,
+}: {
+  id: string
+  rotulo: string
+  marcado: boolean
+  onChange: (v: boolean) => void
+}) {
+  return (
+    <label htmlFor={id} className="check-linha">
+      <input
+        id={id}
+        type="checkbox"
+        className="check-linha__input"
+        checked={marcado}
+        onChange={(e) => onChange(e.target.checked)}
+      />
+      <span>{rotulo}</span>
+    </label>
+  )
+}
+
+function Cartao({ titulo, icone, children }: { titulo: string; icone: ReactNode; children: ReactNode }) {
+  return (
+    <section className="cartao">
+      <h2 className="cartao__titulo">
+        <span className="icone-ouro">{icone}</span>
+        {titulo}
+      </h2>
+      {children}
+    </section>
+  )
 }
 
 // ─── Editor ───────────────────────────────────────────────────────────────────
@@ -254,215 +196,235 @@ export function RegistroDoDia({
 
   if (exercicios === null) return null
 
+  // ─── Derivações de apresentação (leitura de dados existentes; sem escrita) ──
+
+  // Hora local "HH:MM" só quando é hoje — para recuar visualmente refeições cujo
+  // horário ainda não chegou. Comparação lexical basta (largura fixa).
+  const agora = new Date()
+  const horaAtual = ehHoje
+    ? `${String(agora.getHours()).padStart(2, "0")}:${String(agora.getMinutes()).padStart(2, "0")}`
+    : null
+
+  const refeicoes = perfil?.refeicoes ?? []
+  const totalRefeicoes = refeicoes.length
+  const seguidas = refeicoes.filter((r) => statusDaRefeicao(registro, r.id) === "Seguiu").length
+  const kcalRegistradas = refeicoes.reduce(
+    (s, r) => (statusDaRefeicao(registro, r.id) === "Seguiu" ? s + (r.opcoes[0]?.macros.kcal ?? 0) : s),
+    0,
+  )
+  const pctRefeicoes = totalRefeicoes ? Math.round((seguidas / totalRefeicoes) * 100) : 0
+
   const aguaConsumida = registro.agua_consumida_ml ?? 0
   const aguaPct = Math.min(100, Math.round((aguaConsumida / plano.meta_agua_diaria_ml) * 100))
 
   return (
-    <div style={{ paddingTop: "var(--space-5)" }}>
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "var(--space-3)" }}>
+    <div className="hoje">
+      <header className="hoje__cabecalho">
         <div>
-          <p style={{ ...estiloMono, color: "var(--text-muted)", fontSize: "13px" }}>
-            {ehHoje ? "Hoje" : formatarDataCurta(data)}
-          </p>
-          <h1
-            style={{
-              fontFamily: "var(--font-display)",
-              fontSize: "24px",
-              fontWeight: 500,
-              color: "var(--text)",
-              margin: "var(--space-1) 0 var(--space-5)",
-            }}
-          >
-            {DIA_LABEL[dia]}
-          </h1>
+          <p className="hoje__data">{ehHoje ? "Hoje" : formatarDataCurta(data)}</p>
+          <h1 className="hoje__titulo">{DIA_LABEL[dia]}</h1>
         </div>
         <BotaoIcone rotulo="Abrir calendário — escolher outro dia" onClick={() => navigate("/calendario")}>
           <IconeCalendario />
         </BotaoIcone>
-      </div>
+      </header>
 
-      {erroSalvar && (
-        <p style={{ color: "var(--feedback-erro)", fontSize: "13px", marginBottom: "var(--space-4)" }}>
-          {erroSalvar}
-        </p>
+      {erroSalvar && <p className="hoje__erro">{erroSalvar}</p>}
+
+      {/* ─── Jornada do dia: progresso de refeições + kcal ─── */}
+      {totalRefeicoes > 0 && (
+        <div className="hoje__jornada">
+          <div className="hoje__jornada-texto">
+            <span className="hoje__jornada-metrica">
+              <b>{seguidas}/{totalRefeicoes}</b> refeições
+            </span>
+            <span className="hoje__jornada-metrica">
+              <b>{kcalRegistradas}</b> / {plano.meta_calorica_diaria} kcal
+            </span>
+          </div>
+          <div
+            className="barra"
+            role="progressbar"
+            aria-label="Refeições seguidas"
+            aria-valuenow={seguidas}
+            aria-valuemin={0}
+            aria-valuemax={totalRefeicoes}
+          >
+            <div className="barra__preenchimento" style={{ width: `${pctRefeicoes}%` }} />
+          </div>
+        </div>
       )}
 
-      {/* ─── Refeições ─── */}
-      <Card titulo="Refeições">
-        {!perfil || perfil.refeicoes.length === 0 ? (
-          <p style={{ color: "var(--text-muted)" }}>Sem refeições definidas para este dia.</p>
-        ) : (
-          perfil.refeicoes.map((refeicao) => {
-            const opcao = refeicao.opcoes[0]
-            const status = statusDaRefeicao(registro, refeicao.id)
-            return (
-              <div
-                key={refeicao.id}
-                style={{
-                  paddingBottom: "var(--space-4)",
-                  marginBottom: "var(--space-4)",
-                  borderBottom: "1px solid var(--border-hairline)",
-                }}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-                  <span style={{ fontWeight: "var(--font-weight-emphasis)", color: "var(--text)" }}>
-                    {refeicao.nome}
-                  </span>
-                  <span style={{ ...estiloMono, fontSize: "13px", color: "var(--text-muted)" }}>
-                    {refeicao.horario}
-                  </span>
-                </div>
+      <div className="hoje__grid">
+        {/* ─── Coluna principal: Refeições ─── */}
+        <main className="hoje__principal">
+          <h2 className="hoje__secao-titulo">Refeições</h2>
+          {totalRefeicoes === 0 ? (
+            <p className="cartao__vazio">Sem refeições definidas para este dia.</p>
+          ) : (
+            refeicoes.map((refeicao) => {
+              const opcao = refeicao.opcoes[0]
+              const status = statusDaRefeicao(registro, refeicao.id)
+              const cumprida = status === "Seguiu"
+              const futura = horaAtual !== null && refeicao.horario > horaAtual
+              const classe = [
+                "refeicao",
+                cumprida && "refeicao--cumprida",
+                futura && "refeicao--futura",
+              ].filter(Boolean).join(" ")
 
-                {opcao && (
-                  <>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginTop: "var(--space-2)" }}>
-                      <span style={{ fontSize: "13px", color: "var(--text-muted)", paddingRight: "var(--space-3)" }}>
-                        {opcao.descricao}
-                      </span>
-                      <span style={{ ...estiloMono, fontSize: "14px", fontWeight: 500, color: "var(--accent-text)", whiteSpace: "nowrap" }}>
-                        {opcao.macros.kcal} kcal
-                      </span>
-                    </div>
-                    <div style={{ display: "flex", gap: "var(--space-2)", marginTop: "var(--space-3)" }}>
-                      <MacroBox valor_g={opcao.macros.proteina_g} rotulo="PROT" />
-                      <MacroBox valor_g={opcao.macros.carboidrato_g} rotulo="CARB" />
-                      <MacroBox valor_g={opcao.macros.gordura_g} rotulo="GORD" />
-                    </div>
-                    <div style={{ display: "flex", gap: "var(--space-2)", marginTop: "var(--space-3)" }}>
-                      <BotaoStatus
-                        ativo={status === "Seguiu"}
-                        variante="seguiu"
-                        onClick={() => aplicar((r) => alternarStatusRefeicao(r, refeicao.id, "Seguiu", opcao.id))}
-                      >
-                        Seguiu
-                      </BotaoStatus>
-                      <BotaoStatus
-                        ativo={status === "NaoSeguiu"}
-                        variante="naoSeguiu"
-                        onClick={() => aplicar((r) => alternarStatusRefeicao(r, refeicao.id, "NaoSeguiu", opcao.id))}
-                      >
-                        Não seguiu
-                      </BotaoStatus>
-                    </div>
-                  </>
-                )}
-              </div>
-            )
-          })
-        )}
-      </Card>
+              return (
+                <article key={refeicao.id} className={classe}>
+                  <div className="refeicao__topo">
+                    <span className="refeicao__nome">
+                      {refeicao.nome}
+                      {cumprida && <span className="refeicao__check"><IconeCheck /></span>}
+                    </span>
+                    <span className="refeicao__horario">{refeicao.horario}</span>
+                  </div>
 
-      {/* ─── Treino / JJ ─── */}
-      <Card titulo="Atividade">
-        {sessao ? (
-          <>
-            <ul style={{ listStyle: "none", marginBottom: "var(--space-4)" }}>
-              {sessao.slots.map((slot) => {
-                const primeira = slot.opcoes[0]
-                const ex = primeira && exercicios.get(primeira.exercicio_id as ExercicioId as string)
-                const alternativas = slot.opcoes
-                  .slice(1)
-                  .map((o) => exercicios.get(o.exercicio_id as string)?.nome)
-                  .filter(Boolean)
-                if (!ex) return null
-                return (
-                  <li
-                    key={slot.id}
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      gap: "var(--space-3)",
-                      padding: "var(--space-2) 0",
-                      borderBottom: "1px solid var(--border-hairline)",
-                    }}
-                  >
-                    <span style={{ color: "var(--text)" }}>
-                      {ex.nome}
-                      {alternativas.length > 0 && (
-                        <span style={{ color: "var(--text-muted)", fontSize: "12px" }}>
-                          {" "}
-                          ou {alternativas.join(", ")}
+                  {opcao && (
+                    <>
+                      <div className="refeicao__desc-linha">
+                        <span className="refeicao__desc">{opcao.descricao}</span>
+                        <span className="refeicao__kcal">{opcao.macros.kcal} kcal</span>
+                      </div>
+                      <div className="refeicao__macros">
+                        <span>
+                          <span className="refeicao__macro-num">{opcao.macros.proteina_g}</span>P
                         </span>
-                      )}
-                    </span>
-                    <span style={{ ...estiloMono, fontSize: "13px", color: "var(--text-muted)", whiteSpace: "nowrap" }}>
-                      {ex.series}×{formatarRepeticao(ex.repeticao)}
-                    </span>
-                  </li>
-                )
-              })}
-            </ul>
+                        <span>
+                          <span className="refeicao__macro-num">{opcao.macros.carboidrato_g}</span>C
+                        </span>
+                        <span>
+                          <span className="refeicao__macro-num">{opcao.macros.gordura_g}</span>G
+                        </span>
+                      </div>
+                      <div className="refeicao__acoes">
+                        <button
+                          type="button"
+                          className={`btn-status btn-status--seguiu${cumprida ? " is-ativo" : ""}`}
+                          aria-pressed={cumprida}
+                          onClick={() => aplicar((r) => alternarStatusRefeicao(r, refeicao.id, "Seguiu", opcao.id))}
+                        >
+                          Seguiu
+                        </button>
+                        <button
+                          type="button"
+                          className={`btn-status btn-status--nao${status === "NaoSeguiu" ? " is-ativo" : ""}`}
+                          aria-pressed={status === "NaoSeguiu"}
+                          onClick={() => aplicar((r) => alternarStatusRefeicao(r, refeicao.id, "NaoSeguiu", opcao.id))}
+                        >
+                          Não seguiu
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </article>
+              )
+            })
+          )}
+        </main>
+
+        {/* ─── Aside: água, atividade, checklist ─── */}
+        <aside className="hoje__aside">
+          {/* Água */}
+          <Cartao titulo="Hidratação" icone={<IconeGota />}>
+            <div className="agua__topo">
+              <span className="agua__valor">{aguaConsumida} ml</span>
+              <span className="agua__meta">meta {plano.meta_agua_diaria_ml} ml</span>
+            </div>
+            <div
+              className="barra"
+              role="progressbar"
+              aria-valuenow={aguaConsumida}
+              aria-valuemin={0}
+              aria-valuemax={plano.meta_agua_diaria_ml}
+            >
+              <div className="barra__preenchimento" style={{ width: `${aguaPct}%` }} />
+            </div>
+            <div className="agua__botoes">
+              <button
+                type="button"
+                className="btn-agua"
+                onClick={() => aplicar((r) => incrementarAgua(r, -INCREMENTO_AGUA_ML))}
+              >
+                −{INCREMENTO_AGUA_ML}
+              </button>
+              <button
+                type="button"
+                className="btn-agua btn-agua--mais"
+                onClick={() => aplicar((r) => incrementarAgua(r, INCREMENTO_AGUA_ML))}
+              >
+                +{INCREMENTO_AGUA_ML} ml
+              </button>
+            </div>
+          </Cartao>
+
+          {/* Atividade */}
+          <Cartao titulo="Atividade" icone={<IconeHalter />}>
+            {sessao ? (
+              <>
+                <ul className="treino__lista">
+                  {sessao.slots.map((slot) => {
+                    const primeira = slot.opcoes[0]
+                    const ex = primeira && exercicios.get(primeira.exercicio_id as ExercicioId as string)
+                    const alternativas = slot.opcoes
+                      .slice(1)
+                      .map((o) => exercicios.get(o.exercicio_id as string)?.nome)
+                      .filter(Boolean)
+                    if (!ex) return null
+                    return (
+                      <li key={slot.id} className="treino__item">
+                        <span className="treino__ex">
+                          {ex.nome}
+                          {alternativas.length > 0 && (
+                            <span className="treino__alt"> ou {alternativas.join(", ")}</span>
+                          )}
+                        </span>
+                        <span className="treino__prescricao">
+                          {ex.series}×{formatarRepeticao(ex.repeticao)}
+                        </span>
+                      </li>
+                    )
+                  })}
+                </ul>
+                <CheckboxLinha
+                  id="treino"
+                  rotulo="Treino concluído"
+                  marcado={registro.treino_realizado === true}
+                  onChange={(v) => aplicar((r) => definirTreino(r, v))}
+                />
+              </>
+            ) : (
+              <p className="cartao__vazio" style={{ marginBottom: "var(--space-2)" }}>
+                Sem treino de musculação neste dia.
+              </p>
+            )}
+            {/* JJ hardcoded por enquanto; o toggle não é ciente do dia (aparece
+                sempre, mesmo em dias sem JJ). Igual ao comportamento da tela hoje. */}
             <CheckboxLinha
-              id="treino"
-              rotulo="Treino concluído"
-              marcado={registro.treino_realizado === true}
-              onChange={(v) => aplicar((r) => definirTreino(r, v))}
+              id="jj"
+              rotulo="Jiu-jitsu concluído"
+              marcado={registro.jj_realizado === true}
+              onChange={(v) => aplicar((r) => definirJJ(r, v))}
             />
-          </>
-        ) : (
-          <p style={{ color: "var(--text-muted)", marginBottom: "var(--space-2)" }}>
-            Sem treino de musculação neste dia.
-          </p>
-        )}
-        {/* JJ hardcoded por enquanto; o toggle não é ciente do dia (aparece
-            sempre, mesmo em dias sem JJ). Igual ao comportamento da tela hoje. */}
-        <CheckboxLinha
-          id="jj"
-          rotulo="Jiu-jitsu concluído"
-          marcado={registro.jj_realizado === true}
-          onChange={(v) => aplicar((r) => definirJJ(r, v))}
-        />
-      </Card>
+          </Cartao>
 
-      {/* ─── Água ─── */}
-      <Card titulo="Hidratação">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "var(--space-2)" }}>
-          <span style={{ ...estiloMono, fontSize: "18px", fontWeight: 500, color: "var(--accent-text)" }}>
-            {aguaConsumida} ml
-          </span>
-          <span style={{ ...estiloMono, fontSize: "13px", color: "var(--text-muted)" }}>
-            meta {plano.meta_agua_diaria_ml} ml
-          </span>
-        </div>
-        <div
-          role="progressbar"
-          aria-valuenow={aguaConsumida}
-          aria-valuemin={0}
-          aria-valuemax={plano.meta_agua_diaria_ml}
-          style={{ height: "6px", background: "var(--bg)", borderRadius: "999px", overflow: "hidden" }}
-        >
-          <div style={{ width: `${aguaPct}%`, height: "100%", background: "var(--accent)" }} />
-        </div>
-        <div style={{ display: "flex", gap: "var(--space-2)", marginTop: "var(--space-4)" }}>
-          <button
-            type="button"
-            onClick={() => aplicar((r) => incrementarAgua(r, -INCREMENTO_AGUA_ML))}
-            style={botaoAguaEstilo}
-          >
-            −{INCREMENTO_AGUA_ML}
-          </button>
-          <button
-            type="button"
-            onClick={() => aplicar((r) => incrementarAgua(r, INCREMENTO_AGUA_ML))}
-            style={{ ...botaoAguaEstilo, borderColor: "var(--accent)", color: "var(--accent-text)" }}
-          >
-            +{INCREMENTO_AGUA_ML} ml
-          </button>
-        </div>
-      </Card>
-
-      {/* ─── Checklist ─── */}
-      <Card titulo="Checklist">
-        {plano.checklist_template.map((item) => (
-          <CheckboxLinha
-            key={item.id}
-            id={`chk-${item.id}`}
-            rotulo={item.descricao}
-            marcado={registro.checklist[item.id] === true}
-            onChange={(v) => aplicar((r) => definirChecklistItem(r, item.id, v))}
-          />
-        ))}
-      </Card>
+          {/* Checklist */}
+          <Cartao titulo="Checklist" icone={<IconeLista />}>
+            {plano.checklist_template.map((item) => (
+              <CheckboxLinha
+                key={item.id}
+                id={`chk-${item.id}`}
+                rotulo={item.descricao}
+                marcado={registro.checklist[item.id] === true}
+                onChange={(v) => aplicar((r) => definirChecklistItem(r, item.id, v))}
+              />
+            ))}
+          </Cartao>
+        </aside>
+      </div>
     </div>
   )
 }
