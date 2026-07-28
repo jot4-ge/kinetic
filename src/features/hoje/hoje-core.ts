@@ -120,15 +120,19 @@ export function definirChecklistItem(
   return { ...registro, checklist: { ...registro.checklist, [item_id]: marcado } }
 }
 
-// ADR-0008: o chamador atualiza editado_em antes de salvar. Na criação (primeiro
-// salvamento, jaPersistido=false) editado_em permanece null; toda edição
-// posterior recebe o timestamp atual.
+// ADR-0008/0015: o chamador atualiza editado_em antes de salvar. editado_em
+// permanece null APENAS quando o Registro é gravado ao vivo no próprio dia
+// (retroativo=false) pela primeira vez (jaPersistido=false). Toda escrita
+// retroativa — a de um dia passado, inclusive sua primeira gravação — e toda
+// edição posterior recebem o timestamp atual, para que um dia preenchido depois
+// nunca se confunda com um registrado na hora.
 export function carimbarEdicao(
   registro: RegistroDeAderencia,
   jaPersistido: boolean,
+  retroativo: boolean,
   agora: () => Date,
 ): RegistroDeAderencia {
-  if (!jaPersistido) return registro
+  if (!jaPersistido && !retroativo) return registro
   return { ...registro, editado_em: agora().toISOString() as ISOTimestamp }
 }
 

@@ -19,3 +19,11 @@ export function formatarISODate(d: Date): ISODate {
 export function diaDaSemanaDe(d: Date): DiaDaSemana {
   return DIAS[d.getDay()]
 }
+
+// Dia da semana de uma ISODate ("YYYY-MM-DD"). Monta a data com o construtor
+// NUMÉRICO local (new Date(ano, mesIdx, dia)) — nunca new Date(iso), que parseia
+// como UTC e, em fusos negativos, devolve o dia anterior.
+export function diaDaSemanaDeISO(iso: ISODate): DiaDaSemana {
+  const [ano, mes, dia] = iso.split("-").map(Number)
+  return DIAS[new Date(ano, mes - 1, dia).getDay()]
+}
