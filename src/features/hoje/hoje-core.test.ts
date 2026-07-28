@@ -117,20 +117,28 @@ describe("definirTreino / definirChecklistItem", () => {
   })
 })
 
-describe("carimbarEdicao (ADR-0008)", () => {
+describe("carimbarEdicao (ADR-0008/0015)", () => {
   const base = criarRegistroVazio(ctx)
   const agora = () => new Date("2026-07-14T12:00:00.000Z")
 
-  it("no primeiro salvamento (criação) mantém editado_em nulo", () => {
-    expect(carimbarEdicao(base, false, agora).editado_em).toBeNull()
+  it("registro ao vivo, primeiro salvamento (criação) mantém editado_em nulo", () => {
+    expect(carimbarEdicao(base, false, false, agora).editado_em).toBeNull()
   })
 
   it("em edições posteriores carimba o timestamp atual", () => {
-    expect(carimbarEdicao(base, true, agora).editado_em).toBe("2026-07-14T12:00:00.000Z")
+    expect(carimbarEdicao(base, true, false, agora).editado_em).toBe("2026-07-14T12:00:00.000Z")
+  })
+
+  it("escrita retroativa carimba já na primeira gravação (ADR-0015)", () => {
+    expect(carimbarEdicao(base, false, true, agora).editado_em).toBe("2026-07-14T12:00:00.000Z")
+  })
+
+  it("edição retroativa de registro existente também carimba", () => {
+    expect(carimbarEdicao(base, true, true, agora).editado_em).toBe("2026-07-14T12:00:00.000Z")
   })
 
   it("nunca altera data (imutável)", () => {
-    const carimbado = carimbarEdicao(base, true, agora)
+    const carimbado = carimbarEdicao(base, true, false, agora)
     expect(carimbado.data).toBe(base.data)
   })
 })

@@ -7,9 +7,11 @@ import { BotaoIcone } from "@/components/BotaoIcone"
 import { OnboardingPage } from "@/features/onboarding/OnboardingPage"
 import { RotaRaiz } from "@/features/onboarding/RotaRaiz"
 import { HojePage } from "@/features/hoje/HojePage"
+import { DiaPage } from "@/features/hoje/DiaPage"
 import { PerfilPage } from "@/features/perfil/PerfilPage"
 import { HistoricoPage } from "@/features/historico/HistoricoPage"
 import { PlanoRegistrosPage } from "@/features/historico/PlanoRegistrosPage"
+import { CalendarioPage } from "@/features/calendario/CalendarioPage"
 
 // Ícones do header — traço fino, herdam currentColor (cor de texto, nunca ouro).
 function IconePerfil() {
@@ -37,6 +39,8 @@ function IconeVoltar() {
 //   /perfil            → /hoje
 //   /historico         → /perfil   (entrada mora no card de Plano do Perfil)
 //   /historico/:plano  → /historico
+//   /calendario        → /hoje     (entrada mora no ícone de calendário do dia)
+//   /dia/:data         → /calendario
 // Telas "pré-app" (raiz, onboarding) não têm ação secundária.
 function AcaoHeader() {
   const { pathname } = useLocation()
@@ -54,6 +58,8 @@ function AcaoHeader() {
   if (pathname === "/perfil") voltarPara = "/hoje"
   else if (pathname === "/historico") voltarPara = "/perfil"
   else if (pathname.startsWith("/historico/")) voltarPara = "/historico"
+  else if (pathname === "/calendario") voltarPara = "/hoje"
+  else if (pathname.startsWith("/dia/")) voltarPara = "/calendario"
 
   if (voltarPara) {
     return (
@@ -111,6 +117,8 @@ function App() {
         <Route path="/" element={<RotaRaiz />} />
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route path="/hoje" element={<HojePage />} />
+        <Route path="/calendario" element={<CalendarioPage />} />
+        <Route path="/dia/:data" element={<DiaPage />} />
         <Route path="/perfil" element={<PerfilPage />} />
         <Route path="/historico" element={<HistoricoPage />} />
         <Route path="/historico/:planoId" element={<PlanoRegistrosPage />} />

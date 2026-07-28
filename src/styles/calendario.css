@@ -1,0 +1,183 @@
+/* ─── Calendário (navegação temporal, ADR-0015) ──────────────────────────────
+   Grade de um mês como peça visual de destaque (brand): respiro generoso,
+   números mono como protagonistas, ouro reservado ao que marca a ação do
+   usuário — o dia de hoje (o eixo) e os dias com Registro (onde ele já agiu).
+   Nada de ouro decorativo.
+
+   Estados de uma célula-dia (ortogonais, podem coexistir):
+   - .is-hoje       → anel ouro fino: o eixo do calendário (aria-current="date")
+   - .tem-registro  → ponto ouro abaixo do número: o usuário registrou esse dia
+   - .is-futuro     → apagado e não clicável (aria-disabled): não se registra o
+                      que ainda não aconteceu (ADR-0015)
+
+   Acessibilidade (escopo desta fase): table[role=grid] com roving tabindex,
+   navegação por setas/PageUp-Down/Home-End, foco visível (o tema não define
+   :focus por padrão — é definido aqui) e alvos de toque ≥ 44px (brand §9).
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.calendario {
+  margin-top: var(--space-5);
+}
+
+/* ─── Cabeçalho: mês anterior · rótulo · próximo mês ──────────────────────── */
+
+.calendario__cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.calendario__titulo-mes {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--text);
+  text-align: center;
+  flex: 1;
+}
+
+.calendario__nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--touch-target-min);
+  min-height: var(--touch-target-min);
+  padding: 0;
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  transition: background var(--duration-fast) ease, border-color var(--duration-fast) ease;
+}
+
+.calendario__nav:hover {
+  background: var(--bg-elevated);
+}
+
+.calendario__nav:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ─── Grade ───────────────────────────────────────────────────────────────── */
+
+.calendario__grade {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.calendario__col {
+  padding: 0 0 var(--space-3);
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.calendario__celula {
+  padding: 2px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* ─── Dia ─────────────────────────────────────────────────────────────────── */
+
+.calendario__dia {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: var(--touch-target-min);
+  aspect-ratio: 1 / 1;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background var(--duration-fast) ease, box-shadow var(--duration-fast) ease;
+}
+
+.calendario__dia:hover:not(.is-futuro) {
+  background: var(--bg-elevated);
+}
+
+.calendario__dia:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Hoje — o eixo: anel ouro fino. O número permanece em peso normal (o anel já
+   distingue), aria-current="date" carrega o significado ao leitor de tela. */
+.calendario__dia.is-hoje {
+  box-shadow: inset 0 0 0 1.5px var(--accent);
+  color: var(--accent-text);
+}
+
+/* Dia com Registro — ponto ouro sob o número. Coexiste com is-hoje. */
+.calendario__dia.tem-registro::after {
+  content: "";
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+/* Futuro — presente, mas apagado e inerte. aria-disabled (não o atributo
+   disabled) para permanecer focável pela navegação de teclado e ser anunciado
+   como desabilitado. */
+.calendario__dia.is-futuro {
+  color: var(--text-muted);
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* ─── Legenda ─────────────────────────────────────────────────────────────── */
+
+.calendario__legenda {
+  display: flex;
+  gap: var(--space-4);
+  justify-content: center;
+  margin-top: var(--space-5);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.calendario__legenda-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.calendario__legenda-anel {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-sm);
+  box-shadow: inset 0 0 0 1.5px var(--accent);
+}
+
+.calendario__legenda-ponto {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--accent);
+}
