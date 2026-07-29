@@ -6,6 +6,8 @@ App de acompanhamento de rotina personalizada: exibe o Plano do usuário (o que 
 
 O produto se chama **Kinetic** (conceito greco-romano: ordem + movimento; paleta mármore/negro/ouro). A fonte da verdade para toda decisão visual — cores, tipografia, logo, imagens, componentes — é [`docs/brand.md`](docs/brand.md); decisão registrada em ADR-0013. Os design tokens estão implementados em `src/styles/theme.css`. O que não está definido no brand book é decisão pendente do dono do projeto.
 
+O princípio de expressão é **voz contida, visual expressivo** (ADR-0016): a copy é enxuta, mas a ornamentação greco-romana — molduras, meandros, colunas de ambiente, frontões — é generosa. O limite inegociável: ornamento no ambiente é livre, ornamento sobre os dados (macros, kcal, números, listas) é proibido.
+
 ## Linguagem
 
 **Plano**:

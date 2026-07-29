@@ -72,10 +72,11 @@ function AcaoHeader() {
 }
 
 function Shell({ children }: { children: React.ReactNode }) {
-  // Telas de registro do dia (/hoje, /dia/:data) abrem a largura no desktop
-  // para o layout de duas colunas; as demais rotas seguem estreitas.
+  // Telas de duas colunas no desktop (/hoje, /dia/:data e /calendario, que tem
+  // grade + painel do mês) abrem a largura; as demais rotas seguem estreitas.
   const { pathname } = useLocation()
-  const ampla = pathname === "/hoje" || pathname.startsWith("/dia/")
+  const ampla =
+    pathname === "/hoje" || pathname === "/calendario" || pathname.startsWith("/dia/")
   return (
     <div className={ampla ? "app-shell app-shell--ampla" : "app-shell"}>
       <header
