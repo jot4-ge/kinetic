@@ -122,9 +122,16 @@ const MESES_LONGOS = [
   "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
 ] as const
 
-// "Julho 2026" para o cabeçalho do calendário.
+// "Julho 2026" para o cabeçalho do calendário e para o aria-label da grade.
 export function rotuloMes(ano: number, mes: number): string {
   return `${MESES_LONGOS[mes - 1]} ${ano}`
+}
+
+// As duas partes do rótulo separadas, para o título em frontão (brand §7.3)
+// tipografar o ano em ouro ao lado do mês. Só apresentação — o rótulo completo
+// e acessível continua vindo de rotuloMes.
+export function partesRotuloMes(ano: number, mes: number): { mes: string; ano: string } {
+  return { mes: MESES_LONGOS[mes - 1], ano: String(ano) }
 }
 
 // Cabeçalhos das colunas: rótulo curto para o visual, nome completo para o

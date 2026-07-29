@@ -38,9 +38,16 @@ exagerada, zero exclamações. O usuário já está motivado — o app entrega e
 
 ---
 
-## 3. Tom de voz
+## 3. Tom de voz e expressão visual
 
-> **Direto, mas não frio. Limpo, mas não vazio. Humano, mas não informal demais.**
+> **Voz contida, visual expressivo.** São dois eixos independentes e é um erro
+> tratá-los como um só: o Kinetic **fala pouco** e **mostra muito**.
+
+Essa distinção é o princípio de expressão da marca (ADR-0016). A contenção vale
+para a **copy** — palavras custam atenção. Ela NÃO vale para a **ornamentação
+visual**, que é generosa e é o que torna o app memorável.
+
+### 3.1 Tom de voz (contido — isto não muda)
 
 - **Fala pouco, pesa muito.** Labels curtos, sem marketing. "382 kcal", nunca
   "Você consumiu 382 kcal hoje!"
@@ -50,6 +57,30 @@ exagerada, zero exclamações. O usuário já está motivado — o app entrega e
   tipográfica deixa a métrica falar antes do rótulo.
 - **Sem exclamações em copy de sistema.** Sem "por favor" em instruções. Verbos
   no imperativo direto: "Registrar refeição", não "Que tal registrar sua refeição?"
+
+### 3.2 Expressão visual (generosa)
+
+A identidade greco-romana é **afirmada, não sugerida**. Molduras, meandros gregos,
+frontões, colunas de ambiente, capitéis, filetes e faixas ornamentais são
+bem-vindos e esperados. Uma tela do Kinetic deve ser reconhecível como Kinetic
+por sua arquitetura visual, não só pela paleta.
+
+**A ÚNICA linha inegociável:**
+
+> **Ornamento no ambiente é livre. Ornamento sobre os dados é proibido.**
+
+"Dados" = tudo que o usuário precisa ler rápido e sem esforço: macros, kcal,
+números, pesos, listas de refeições e exercícios, rótulos de campo, estados de
+registro. Sobre esses elementos nada compete — nem textura, nem imagem de fundo,
+nem faixa dourada, nem serifa decorativa.
+
+"Ambiente" = tudo que emoldura os dados sem se sobrepor a eles: fundos de página,
+bordas e molduras de card, cabeçalhos e rodapés de seção, laterais, separadores,
+estados vazios, splash. Aqui a ornamentação é encorajada.
+
+Na dúvida entre "isto enfeita" e "isto atrapalha a leitura", a leitura vence —
+mas a resposta correta é quase sempre mover o ornamento para o ambiente, não
+eliminá-lo.
 
 ---
 
@@ -79,8 +110,17 @@ exagerada, zero exclamações. O usuário já está motivado — o app entrega e
 ### 4.3 Regras de cor
 
 - **O ouro `#C9A84C` é o ÚNICO acento.** Não existe cor secundária de destaque.
-- Ouro aparece apenas em: métricas importantes, CTAs primários, indicadores de progresso,
-  o tagline, e detalhes do símbolo da marca. **Nunca decorativo.**
+  A generosidade da marca está na **quantidade de ornamento**, nunca na quantidade
+  de cores.
+- **Ouro tem dois registros de uso, com opacidades distintas:**
+  - **Ouro de significado** (opacidade plena): métricas importantes, CTAs primários,
+    indicadores de progresso, o dia de hoje, o tagline, detalhes do símbolo. Quando
+    o ouro está cheio, ele quer dizer alguma coisa.
+  - **Ouro de ambiente** (opacidade baixa, ~4–20%): meandros, molduras, filetes,
+    colunas de ambiente, faixas de cabeçalho e rodapé. Ornamento legítimo — o que
+    o antigo "nunca decorativo" proibia e hoje é encorajado (§3.2).
+  A separação por opacidade é o que impede o ornamento de roubar o sinal: se um
+  elemento ornamental competir visualmente com uma métrica, ele está forte demais.
 - Cores semânticas (sucesso/erro/aviso) são permitidas apenas em feedback de sistema
   (validação de formulário, toasts) e devem ser dessaturadas para combinar com a paleta —
   nunca verde/vermelho puro e vibrante.
@@ -93,12 +133,15 @@ exagerada, zero exclamações. O usuário já está motivado — o app entrega e
 
 | Papel | Fonte | Uso | Regra |
 |---|---|---|---|
-| Display / marca | **Cinzel** | Wordmark, títulos de seção principais | Usada com contenção. NUNCA em corpo de texto, labels ou botões |
+| Display / marca | **Cinzel** | Wordmark, títulos de seção, títulos ornamentais (frontões, cabeçalhos emoldurados) | NUNCA em corpo de texto, labels, botões ou dados |
 | Corpo / UI | **Inter** (ou DM Sans) | Todo o resto da interface | Peso 400 padrão, 500 para ênfase. Nunca 700+ |
 | Dados / números | **Fonte mono** (JetBrains Mono ou similar) | Métricas, kcal, macros, pesos | Alinhamento tabular para colunas de números |
 
 - Cinzel é baseada nas proporções das inscrições romanas clássicas — é a conexão
-  tipográfica com a referência grega. Seu uso excessivo vira pastiche; contenção é regra.
+  tipográfica com a referência grega. Use-a em todo título que emoldura conteúdo:
+  ela é parte do ornamento (§3.2), não uma exceção rara. O limite não é de
+  quantidade, é de função — Cinzel titula, jamais carrega dado nem rótulo de campo,
+  onde a legibilidade em corpo pequeno é o que importa.
 - Letter-spacing generoso no wordmark (KINETIC): ~0.15em.
 - Tagline "move with purpose": Cinzel ou serif, tamanho pequeno, letter-spacing ~0.3em,
   cor ouro.
@@ -139,7 +182,11 @@ generoso + tagline "move with purpose" em ouro abaixo do wordmark.
 
 ---
 
-## 7. Imagens e elementos visuais
+## 7. Imagens e elementos ornamentais
+
+Esta seção é onde a expressividade da marca (§3.2) se materializa. Imagens e
+ornamentos não são um "extra" a ser cortado quando o tempo aperta — são o que
+distingue o Kinetic de um dashboard genérico.
 
 ### 7.1 Direção fotográfica / ilustrativa
 
@@ -157,10 +204,36 @@ Características obrigatórias das imagens:
 - Splash screen / abertura
 - Fundos de seção (com overlay escuro para garantir legibilidade do conteúdo)
 - Estados vazios (empty states) — uma escultura contemplativa em vez de ilustração genérica
-- **Nunca:** atrás de dados densos (tabelas de macros, listas de exercícios) — legibilidade
-  vence decoração sempre
+- Cabeçalhos de tela e faixas de transição entre seções
+- **Nunca:** atrás de dados densos (tabelas de macros, listas de exercícios,
+  números de registro) — a linha inegociável do §3.2. Nesses lugares o ornamento
+  vai para a **moldura** ao redor do bloco, não para trás dele.
 
-### 7.3 Textura de mármore
+### 7.3 Vocabulário ornamental
+
+O léxico greco-romano do Kinetic. Estes elementos são reutilizáveis e devem
+aparecer com regularidade — a repetição é o que cria reconhecimento de marca.
+
+| Elemento | O que é | Onde usar | Tratamento |
+|---|---|---|---|
+| **Meandro grego** (grega / *greek key*) | Faixa de linhas em ângulo reto, padrão contínuo | Topo e rodapé de uma peça, separadores de seção | Ouro de ambiente (~10–20% de opacidade), traço fino, altura discreta (8–16px) |
+| **Moldura** | Borda que declara "isto é uma peça", não só um retângulo | Cards de destaque, grades, blocos de conteúdo | Hairline dupla ou borda + filete interno em ouro de ambiente |
+| **Colunas de ambiente** | Faixas verticais evocando colunas de templo | Laterais de uma área de conteúdo, fundos de seção | Opacidade **muito** baixa (~4–8%), largura estreita, sem contorno duro |
+| **Frontão** | Título ladeado por linhas/ângulos, como o topo de um templo | Títulos de tela e de seção | Cinzel + linhas douradas laterais; parte do título pode ir em ouro pleno |
+| **Filete / estilóbata** | Linha (ou par de linhas) de ancoragem horizontal | Base de cards, rodapés, sob títulos | Ouro de ambiente; par de linhas com pesos diferentes |
+| **Capitel** | Traço sólido rematando um elemento vertical | Topo de barras de progresso, extremidades de divisores | Ouro pleno quando marca dado; ambiente quando é só remate |
+
+**Regra de composição:** um ornamento por função. Uma peça pode ter meandro no
+topo, colunas nas laterais e filete na base — mas não dois meandros concorrendo
+na mesma borda. Ornamento generoso não é ornamento acumulado.
+
+**Regra de custo:** ornamentos são CSS/SVG inline (gradientes, `repeating-linear-gradient`,
+`border-image`, pseudo-elementos). Nada de imagens raster para padrão geométrico.
+
+**Regra de movimento:** ornamento é estático. Nada de meandro animado, brilho
+pulsante ou moldura que respira — a animação continua contida (§8).
+
+### 7.4 Textura de mármore
 
 Fundo com textura de mármore real (sutil) nos dois modos:
 - Light: veios sutis de Carrara sobre `#F5F3EE`
@@ -175,28 +248,41 @@ causar jank de scroll em mobile, degradar para cor sólida — performance vence
 ## 8. Componentes — princípios
 
 - **Cards:** fundo elevado (Veio / Veio escuro), cantos arredondados moderados (8-12px),
-  sem sombras pesadas. Bordas hairline sutis quando necessário.
+  sem sombras pesadas. **Moldura é bem-vinda** — hairline, filete dourado de ambiente
+  ou remate no topo/base (§7.3). Um card do Kinetic deve parecer uma peça emoldurada,
+  não um retângulo cinza.
 - **Métricas:** número grande em mono ou peso 500, label pequeno em Suporte acima ou
-  abaixo. O número é o protagonista.
+  abaixo. O número é o protagonista — **nada de ornamento dentro da caixa da métrica**;
+  o ornamento vai na borda do card que a contém.
 - **Progresso (hidratação, aderência):** barras finas, preenchimento em ouro,
   fundo em Veio. Percentual e valores absolutos sempre visíveis.
 - **Botão primário:** fundo ouro `#C9A84C`, texto em `#2C2A25` (nunca branco puro sobre
   ouro — contraste insuficiente). Um único CTA primário por tela.
 - **Botão secundário:** outline hairline, texto na cor de Escrita.
 - **Espaçamento:** generoso. Proporção clássica — respiro é parte da identidade grega.
-- **Motion:** contido. Transições rápidas (150-250ms), sem bounce, sem elasticidade.
-  O movimento da marca está no conceito, não em animação exagerada.
+  Respiro e ornamento não são inimigos: o ornamento ocupa a borda do respiro, não o
+  seu miolo.
+- **Títulos de tela:** tratamento de frontão (§7.3) por padrão, não texto solto.
+- **Motion:** contido — este eixo NÃO muda com o novo princípio. Transições rápidas
+  (150-250ms), sem bounce, sem elasticidade. O ornamento é arquitetura, e arquitetura
+  não pisca.
 
 ### 8.1 Fazer / Não fazer
 
+O teste que resolve quase todos os casos: **o elemento está no ambiente ou sobre o
+dado?** Ambiente → orne à vontade. Sobre o dado → não.
+
 | ✓ Fazer | ✗ Não fazer |
 |---|---|
-| Ouro apenas em métricas e ações principais | Ouro como cor decorativa ou em ícones secundários |
-| Cinzel apenas no wordmark e títulos de seção | Cinzel em corpo de texto, labels ou botões |
-| Mármore como fundo — textura presente, não gritante | Gradientes, sombras exageradas, múltiplas cores de acento |
+| Ouro pleno em métricas e ações; ouro de ambiente em molduras e meandros | Ouro de ambiente com opacidade alta o bastante para competir com uma métrica |
+| Meandros, molduras, colunas e frontões emoldurando o conteúdo | Ornamento atrás ou por cima de números, listas e rótulos |
+| Cinzel em títulos e frontões, com liberdade | Cinzel em corpo de texto, labels, botões ou dados |
+| Um ornamento por função e por borda | Meandro + moldura + sombra + textura disputando a mesma aresta |
+| Ornamento em CSS/SVG, estático | Ornamento animado, pulsante ou em imagem raster pesada |
 | Dark mode = negro profundo com elementos emergindo | Dark mode = cinza escuro genérico de app |
-| Números como protagonistas da hierarquia | Texto motivacional competindo com dados |
-| Esculturas/colunas como elementos com propósito | Imagens gregas como wallpaper decorativo em toda tela |
+| Números como protagonistas da hierarquia | Texto motivacional (ou ornamento) competindo com dados |
+| Esculturas e colunas como ambiente recorrente da marca | Imagem de escultura atrás de uma tabela de macros |
+| Múltiplas cores? Não — expressividade vem de forma e ornamento | Segunda cor de acento "para variar" |
 
 ---
 

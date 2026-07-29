@@ -1,12 +1,18 @@
-/* ─── Calendário (navegação temporal, ADR-0015) ──────────────────────────────
-   Grade de um mês como peça visual de destaque (brand): respiro generoso,
-   números mono como protagonistas, ouro reservado ao que marca a ação do
-   usuário — o dia de hoje (o eixo) e os dias com Registro (onde ele já agiu).
-   Nada de ouro decorativo.
+/* ─── Calendário (navegação temporal, ADR-0015 · ornamentação, ADR-0016) ──────
+   Grade de um mês como peça visual de destaque. O calendário é a primeira tela
+   sob o princípio "voz contida, visual expressivo" (brand §3.2): a identidade
+   greco-romana é afirmada com generosidade — meandro no topo e no rodapé,
+   colunas de ambiente nas laterais, título em frontão, células emolduradas.
+
+   A régua que organiza tudo isto (brand §3.2, inegociável):
+     AMBIENTE (moldura, meandro, colunas, filetes) → ornamento à vontade,
+       sempre em ouro de baixa opacidade, sempre atrás/ao redor.
+     DADOS (números dos dias, métricas do painel) → nada por cima. Mono,
+       contraste cheio, zero textura, zero ornamento dentro da caixa.
 
    Estados de uma célula-dia (ortogonais, podem coexistir):
-   - .is-hoje       → anel ouro fino: o eixo do calendário (aria-current="date")
-   - .tem-registro  → ponto ouro abaixo do número: o usuário registrou esse dia
+   - .is-hoje       → moldura ouro grossa + glow + selo "Hoje" (≥768px)
+   - .tem-registro  → indicador de aderência sob o número (3 níveis)
    - .is-futuro     → apagado e não clicável (aria-disabled): não se registra o
                       que ainda não aconteceu (ADR-0015)
 
@@ -15,34 +21,211 @@
    :focus por padrão — é definido aqui) e alvos de toque ≥ 44px (brand §9).
    ──────────────────────────────────────────────────────────────────────────── */
 
+/* Ouro de ambiente (brand §4.3): o mesmo #C9A84C do acento, em opacidades
+   baixas. Literais porque o ouro não muda entre light e dark — o que muda é o
+   quanto ele precisa aparecer sobre cada fundo. */
 .calendario {
+  --ouro-moldura: rgba(201, 168, 76, 0.22);
+  --ouro-filete: rgba(201, 168, 76, 0.35);
+  --ouro-coluna: rgba(201, 168, 76, 0.06);
+  --ouro-coluna-remate: rgba(201, 168, 76, 0.20);
+  --ouro-meandro: 0.20;
+  --celula-borda: var(--border-hairline);
+  /* A célula é ELEVADA em relação à moldura nos dois modos — tijolo saliente,
+     não poço. No light isso é o mármore claro sobre o veio; no dark, um tom
+     acima do fundo elevado, porque inverter o negro afundaria a célula. */
+  --celula-fundo: var(--bg);
+  --celula-fundo-hover: #FFFFFF;
+  /* Posição apagada do indicador. Precisa ser VISÍVEL: ela informa quantas
+     posições existem, sem o que "1 aceso" não se distingue de "1 no total". */
+  --ponto-apagado: 0.30;
+
   margin-top: var(--space-5);
+  display: grid;
+  gap: var(--space-5);
 }
 
-/* ─── Cabeçalho: mês anterior · rótulo · próximo mês ──────────────────────── */
+@media (prefers-color-scheme: dark) {
+  .calendario {
+    --ouro-moldura: rgba(201, 168, 76, 0.26);
+    --ouro-coluna: rgba(201, 168, 76, 0.08);
+    --ouro-meandro: 0.26;
+    --celula-fundo: #201C18;
+    --celula-fundo-hover: #2A251F;
+    --ponto-apagado: 0.24;
+  }
+}
+
+:root[data-theme="dark"] .calendario {
+  --ouro-moldura: rgba(201, 168, 76, 0.26);
+  --ouro-coluna: rgba(201, 168, 76, 0.08);
+  --ouro-meandro: 0.26;
+  --celula-fundo: #201C18;
+  --celula-fundo-hover: #2A251F;
+  --ponto-apagado: 0.24;
+}
+
+:root[data-theme="light"] .calendario {
+  --ouro-moldura: rgba(201, 168, 76, 0.22);
+  --ouro-coluna: rgba(201, 168, 76, 0.06);
+  --ouro-meandro: 0.20;
+  --celula-fundo: var(--bg);
+  --celula-fundo-hover: #FFFFFF;
+  --ponto-apagado: 0.30;
+}
+
+/* ─── Layout: grade (main) + painel (aside) ───────────────────────────────────
+   Mesmo ritmo de desktop da tela "hoje" (tela-hoje.css): breakpoint 768px,
+   aside de 320px, sticky. Um só padrão de desktop no app, não dois. */
+
+@media (min-width: 768px) {
+  .calendario {
+    grid-template-columns: minmax(0, 1fr) 320px;
+    align-items: start;
+  }
+
+  .calendario__painel {
+    position: sticky;
+    top: var(--space-5);
+  }
+}
+
+/* ─── Moldura: a peça emoldurada que contém a grade ──────────────────────── */
+
+.calendario__moldura {
+  position: relative;
+  padding: var(--space-4) var(--space-4) var(--space-3);
+  border: 1px solid var(--ouro-moldura);
+  border-radius: var(--radius-lg);
+  background: var(--bg-elevated);
+}
+
+@media (min-width: 768px) {
+  .calendario__moldura {
+    padding: var(--space-5) var(--space-6) var(--space-4);
+  }
+}
+
+/* Meandro grego — faixa do padrão em ângulo reto no topo e no rodapé da peça
+   (brand §7.3). SVG inline em data URI: padrão geométrico nunca vai em raster.
+   O ouro é literal no SVG (currentColor não atravessa background-image); a
+   opacidade fica no elemento, que é o botão de volume do ornamento. */
+.calendario__meandro {
+  position: absolute;
+  left: var(--space-4);
+  right: var(--space-4);
+  height: 12px;
+  opacity: var(--ouro-meandro);
+  pointer-events: none;
+  background-repeat: repeat-x;
+  background-size: auto 12px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='16' viewBox='0 0 20 16'%3E%3Cg fill='none' stroke='%23C9A84C' stroke-width='1.5'%3E%3Cpath d='M0 15h20'/%3E%3Cpath d='M4 15V4h12v8H8V8h4'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+.calendario__meandro--topo {
+  top: 6px;
+}
+
+/* No rodapé o padrão é espelhado na vertical — o meandro "aponta" para dentro
+   da peça nos dois lados, como uma cornija e um estilóbata. */
+.calendario__meandro--base {
+  bottom: 6px;
+  transform: scaleY(-1);
+}
+
+@media (min-width: 768px) {
+  .calendario__meandro {
+    left: var(--space-5);
+    right: var(--space-5);
+  }
+}
+
+/* Colunas de ambiente — faixas verticais evocando colunas de templo (brand
+   §7.3). Opacidade baixíssima; o remate no topo e na base é o capitel e a
+   estilóbata. Só aparecem onde há folga lateral. */
+.calendario__coluna {
+  display: none;
+  position: absolute;
+  top: 22px;
+  bottom: 22px;
+  width: 8px;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    var(--ouro-coluna) 0%,
+    rgba(201, 168, 76, 0.02) 45%,
+    var(--ouro-coluna) 100%
+  );
+  border-top: 1.5px solid var(--ouro-coluna-remate);
+  border-bottom: 1.5px solid var(--ouro-coluna-remate);
+}
+
+@media (min-width: 768px) {
+  .calendario__coluna {
+    display: block;
+  }
+
+  .calendario__coluna--esq {
+    left: 8px;
+  }
+
+  .calendario__coluna--dir {
+    right: 8px;
+  }
+}
+
+/* ─── Cabeçalho: mês anterior · frontão · próximo mês ─────────────────────── */
 
 .calendario__cabecalho {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
+  margin-top: var(--space-3);
   margin-bottom: var(--space-4);
 }
 
+/* Frontão: o título ladeado por filetes dourados, como o topo de um templo
+   (brand §7.3). Cinzel titula; o ano em ouro é a peça de destaque. */
 .calendario__titulo-mes {
-  font-family: var(--font-display);
-  font-size: 20px;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  color: var(--text);
-  text-align: center;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
   flex: 1;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--text);
+}
+
+.calendario__titulo-texto {
+  white-space: nowrap;
+}
+
+.calendario__titulo-ano {
+  color: var(--accent-text);
+}
+
+.calendario__frontao-filete {
+  flex: 1;
+  height: 1px;
+  min-width: var(--space-3);
+  background: linear-gradient(90deg, transparent, var(--ouro-filete), transparent);
+}
+
+@media (min-width: 768px) {
+  .calendario__titulo-mes {
+    font-size: 22px;
+  }
 }
 
 .calendario__nav {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex: none;
   min-width: var(--touch-target-min);
   min-height: var(--touch-target-min);
   padding: 0;
@@ -55,7 +238,8 @@
 }
 
 .calendario__nav:hover {
-  background: var(--bg-elevated);
+  background: var(--bg);
+  border-color: var(--ouro-moldura);
 }
 
 .calendario__nav:focus-visible {
@@ -67,12 +251,13 @@
 
 .calendario__grade {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 3px;
   table-layout: fixed;
 }
 
 .calendario__col {
-  padding: 0 0 var(--space-3);
+  padding: 0 0 var(--space-2);
   font-family: var(--font-body);
   font-size: 11px;
   font-weight: 500;
@@ -83,61 +268,93 @@
 }
 
 .calendario__celula {
-  padding: 2px;
+  padding: 0;
   text-align: center;
   vertical-align: middle;
 }
 
-/* ─── Dia ─────────────────────────────────────────────────────────────────── */
+/* ─── Dia — célula estruturada, não número flutuando no vazio ─────────────── */
 
 .calendario__dia {
   position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 3px;
   width: 100%;
   min-height: var(--touch-target-min);
   aspect-ratio: 1 / 1;
   padding: 0;
-  border: none;
-  border-radius: var(--radius-md);
-  background: transparent;
+  border: 1px solid var(--celula-borda);
+  border-radius: var(--radius-sm);
+  background: var(--celula-fundo);
   color: var(--text);
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) ease,
+    border-color var(--duration-fast) ease,
+    box-shadow var(--duration-fast) ease;
+}
+
+/* O dado: o número do dia. Mono, tabular, contraste cheio, sem ornamento por
+   cima — a linha inegociável do brand §3.2. */
+.calendario__numero {
   font-family: var(--font-data);
   font-variant-numeric: tabular-nums;
   font-size: 15px;
   line-height: 1;
-  cursor: pointer;
-  transition: background var(--duration-fast) ease, box-shadow var(--duration-fast) ease;
+}
+
+@media (min-width: 768px) {
+  .calendario__numero {
+    font-size: 18px;
+  }
 }
 
 .calendario__dia:hover:not(.is-futuro) {
-  background: var(--bg-elevated);
+  background: var(--celula-fundo-hover);
+  border-color: var(--ouro-moldura);
 }
 
 .calendario__dia:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+  z-index: 1;
 }
 
-/* Hoje — o eixo: anel ouro fino. O número permanece em peso normal (o anel já
-   distingue), aria-current="date" carrega o significado ao leitor de tela. */
+/* Célula de preenchimento (fora do mês): sem moldura, sem fundo. */
+.calendario__celula.is-vazia {
+  background: transparent;
+}
+
+/* Hoje — o eixo: moldura ouro grossa e glow contido. O glow é sombra estática,
+   nunca pulsante (brand §7.3: ornamento não pisca). */
 .calendario__dia.is-hoje {
-  box-shadow: inset 0 0 0 1.5px var(--accent);
+  border-color: var(--accent);
+  border-width: 2px;
+  box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.12), 0 0 12px rgba(201, 168, 76, 0.18);
+}
+
+/* Selo "Hoje" — só a partir de 768px. Abaixo disso a célula tem ~44px e o selo
+   ou espremeria o número ou cairia abaixo do piso de 12px do brand §9; a
+   moldura ouro e o glow já marcam o dia, e aria-current="date" carrega o
+   significado ao leitor de tela em qualquer largura. */
+.calendario__selo {
+  display: none;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1;
   color: var(--accent-text);
 }
 
-/* Dia com Registro — ponto ouro sob o número. Coexiste com is-hoje. */
-.calendario__dia.tem-registro::after {
-  content: "";
-  position: absolute;
-  bottom: 6px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 4px;
-  height: 4px;
-  border-radius: 999px;
-  background: var(--accent);
+@media (min-width: 768px) {
+  .calendario__selo {
+    display: block;
+  }
 }
 
 /* Futuro — presente, mas apagado e inerte. aria-disabled (não o atributo
@@ -145,39 +362,167 @@
    como desabilitado. */
 .calendario__dia.is-futuro {
   color: var(--text-muted);
-  opacity: 0.4;
+  border-color: transparent;
+  background: transparent;
+  opacity: 0.45;
   cursor: default;
 }
 
-/* ─── Legenda ─────────────────────────────────────────────────────────────── */
+/* ─── Indicador de aderência — 3 níveis ───────────────────────────────────────
+   Quantos pontos acesos = quão bem o dia foi cumprido (aderencia-core):
+   3 = todas as refeições, 2 = ≥ 2/3, 1 = alguma, 0 = nenhuma. A trilha aparece
+   sempre que há Registro, mesmo com zero acesos — assim "tem registro" continua
+   legível de relance, que era o que o ponto binário anterior dizia.
 
-.calendario__legenda {
+   Nível apagado NÃO usa cor de alerta: um dia fraco e um dia cheio têm o mesmo
+   tratamento, só muda quantos pontos estão acesos. O app registra, não julga. */
+
+.calendario__pontos {
   display: flex;
-  gap: var(--space-4);
-  justify-content: center;
-  margin-top: var(--space-5);
-  font-size: 12px;
-  color: var(--text-muted);
-}
-
-.calendario__legenda-item {
-  display: inline-flex;
+  gap: 3px;
+  height: 5px;
   align-items: center;
-  gap: var(--space-2);
 }
 
-.calendario__legenda-anel {
-  display: inline-block;
-  width: 14px;
-  height: 14px;
-  border-radius: var(--radius-sm);
-  box-shadow: inset 0 0 0 1.5px var(--accent);
-}
-
-.calendario__legenda-ponto {
-  display: inline-block;
+.calendario__ponto {
   width: 5px;
   height: 5px;
   border-radius: 999px;
   background: var(--accent);
+  opacity: var(--ponto-apagado);
+}
+
+.calendario__ponto.is-aceso {
+  opacity: 1;
+}
+
+/* Dia registrado cuja proporção não é calculável (sem Plano resolvível, ou dia
+   sem refeições previstas): o ponto único de antes — afirma "tem registro" sem
+   afirmar quanto. */
+.calendario__ponto-unico {
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+/* ─── Painel lateral — resumo do mês / do dia sob foco ────────────────────── */
+
+.calendario__painel {
+  padding: var(--space-4) var(--space-4) var(--space-5);
+  border: 1px solid var(--ouro-moldura);
+  border-radius: var(--radius-lg);
+  background: var(--bg-elevated);
+}
+
+.calendario__painel-titulo {
+  margin: 0 0 var(--space-4);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--ouro-filete);
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.calendario__painel-vazio {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+/* Métrica em destaque. Tratamento FIXO: ouro e mono, sempre — 40% e 90% se
+   parecem, só o número muda. Nenhuma cor semântica de alerta para valores
+   baixos (brand §4.3: o ouro é o único acento; e o app não julga o usuário). */
+.calendario__metrica {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-bottom: var(--space-4);
+}
+
+.calendario__metrica-valor {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-size: 30px;
+  line-height: 1;
+  color: var(--accent-text);
+}
+
+.calendario__metrica-rotulo {
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.calendario__linha {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-top: 1px solid var(--border-hairline);
+  font-size: 13px;
+}
+
+.calendario__linha-rotulo {
+  color: var(--text-muted);
+}
+
+.calendario__linha-valor {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+/* Distribuição por nível — dobra como legenda do indicador: mostra o desenho
+   dos pontos ao lado do que cada um significa. */
+.calendario__distribuicao {
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--ouro-filete);
+  display: grid;
+  gap: var(--space-2);
+}
+
+.calendario__distribuicao-linha {
+  display: grid;
+  grid-template-columns: 26px 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.calendario__distribuicao-rotulo {
+  line-height: 1.3;
+}
+
+.calendario__distribuicao-valor {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+/* ─── Cabeçalho da página ─────────────────────────────────────────────────── */
+
+.calendario-pagina {
+  padding-top: var(--space-5);
+}
+
+.calendario-pagina__titulo {
+  margin: 0 0 var(--space-1);
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--text);
+}
+
+.calendario-pagina__subtitulo {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-muted);
 }
