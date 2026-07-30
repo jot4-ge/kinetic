@@ -36,9 +36,6 @@
      acima do fundo elevado, porque inverter o negro afundaria a célula. */
   --celula-fundo: var(--bg);
   --celula-fundo-hover: #FFFFFF;
-  /* Posição apagada do indicador. Precisa ser VISÍVEL: ela informa quantas
-     posições existem, sem o que "1 aceso" não se distingue de "1 no total". */
-  --ponto-apagado: 0.30;
 
   margin-top: var(--space-5);
   display: grid;
@@ -52,7 +49,6 @@
     --ouro-meandro: 0.26;
     --celula-fundo: #201C18;
     --celula-fundo-hover: #2A251F;
-    --ponto-apagado: 0.24;
   }
 }
 
@@ -62,7 +58,6 @@
   --ouro-meandro: 0.26;
   --celula-fundo: #201C18;
   --celula-fundo-hover: #2A251F;
-  --ponto-apagado: 0.24;
 }
 
 :root[data-theme="light"] .calendario {
@@ -71,7 +66,6 @@
   --ouro-meandro: 0.20;
   --celula-fundo: var(--bg);
   --celula-fundo-hover: #FFFFFF;
-  --ponto-apagado: 0.30;
 }
 
 /* ─── Layout: grade (main) + painel (aside) ───────────────────────────────────
@@ -368,43 +362,9 @@
   cursor: default;
 }
 
-/* ─── Indicador de aderência — 3 níveis ───────────────────────────────────────
-   Quantos pontos acesos = quão bem o dia foi cumprido (aderencia-core):
-   3 = todas as refeições, 2 = ≥ 2/3, 1 = alguma, 0 = nenhuma. A trilha aparece
-   sempre que há Registro, mesmo com zero acesos — assim "tem registro" continua
-   legível de relance, que era o que o ponto binário anterior dizia.
-
-   Nível apagado NÃO usa cor de alerta: um dia fraco e um dia cheio têm o mesmo
-   tratamento, só muda quantos pontos estão acesos. O app registra, não julga. */
-
-.calendario__pontos {
-  display: flex;
-  gap: 3px;
-  height: 5px;
-  align-items: center;
-}
-
-.calendario__ponto {
-  width: 5px;
-  height: 5px;
-  border-radius: 999px;
-  background: var(--accent);
-  opacity: var(--ponto-apagado);
-}
-
-.calendario__ponto.is-aceso {
-  opacity: 1;
-}
-
-/* Dia registrado cuja proporção não é calculável (sem Plano resolvível, ou dia
-   sem refeições previstas): o ponto único de antes — afirma "tem registro" sem
-   afirmar quanto. */
-.calendario__ponto-unico {
-  width: 5px;
-  height: 5px;
-  border-radius: 999px;
-  background: var(--accent);
-}
+/* O indicador de aderência (3 pontos sob o número do dia) vive em
+   src/styles/indicador-aderencia.css: é linguagem compartilhada com o Histórico,
+   não peça do calendário. */
 
 /* ─── Painel lateral — resumo do mês / do dia sob foco ────────────────────── */
 
