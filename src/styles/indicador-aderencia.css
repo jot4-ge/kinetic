@@ -1,0 +1,60 @@
+/* ─── Indicador de aderência — 3 níveis (compartilhado) ───────────────────────
+   Quantos pontos acesos = quão bem o dia foi cumprido (aderencia-core):
+   3 = todas as refeições, 2 = ≥ 2/3, 1 = alguma, 0 = nenhuma. A trilha aparece
+   sempre que há Registro, mesmo com zero acesos — assim "tem registro" continua
+   legível de relance.
+
+   Nível apagado NÃO usa cor de alerta: um dia fraco e um dia cheio têm o mesmo
+   tratamento, só muda quantos pontos estão acesos. O app registra, não julga.
+
+   Um só desenho para o calendário e para o histórico — o usuário aprende o
+   indicador uma vez (brand: dado é dado, e dado não muda de dialeto entre telas).
+   ──────────────────────────────────────────────────────────────────────────── */
+
+/* Posição apagada. Precisa ser VISÍVEL: ela informa quantas posições existem,
+   sem o que "1 aceso" não se distingue de "1 no total". O valor muda por tema
+   porque o mesmo ouro rende diferente sobre o mármore e sobre o negro. */
+:root {
+  --ponto-apagado: 0.30;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ponto-apagado: 0.24;
+  }
+}
+
+:root[data-theme="dark"] {
+  --ponto-apagado: 0.24;
+}
+
+:root[data-theme="light"] {
+  --ponto-apagado: 0.30;
+}
+
+.indicador-aderencia {
+  display: flex;
+  gap: 3px;
+  height: 5px;
+  align-items: center;
+}
+
+.indicador-aderencia__ponto {
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--accent);
+  opacity: var(--ponto-apagado);
+}
+
+.indicador-aderencia__ponto.is-aceso {
+  opacity: 1;
+}
+
+.indicador-aderencia__unico {
+  display: block;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--accent);
+}

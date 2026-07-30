@@ -1,8 +1,12 @@
 import { describe, it, expect } from "vitest"
 import {
   formatarDataCurta,
+  formatarMesAno,
   ordenarPlanosRecentesPrimeiro,
   formatarVigencia,
+  numerarEras,
+  resumirEras,
+  formatarContagemEras,
   nomesRefeicoesDoPlano,
   ordenarRegistrosCronologico,
   resumirRegistro,
@@ -149,6 +153,117 @@ describe("formatarVigencia", () => {
   it("Plano Arquivado: início → fim reais e ativo=false", () => {
     const p = plano({ id: "p1", criado_em: "2026-05-01T10:00:00.000Z", vigencia: vigenciaArquivada("2026-05-01", "2026-07-01") })
     expect(formatarVigencia(p)).toEqual({ inicio: "1 mai 2026", fim: "1 jul 2026", ativo: false })
+  })
+})
+
+// ─── formatarMesAno ───────────────────────────────────────────────────────────
+
+describe("formatarMesAno", () => {
+  it("reduz a data ao mês e ano", () => {
+    expect(formatarMesAno("2026-07-12" as ISODate)).toBe("jul 2026")
+    expect(formatarMesAno("2026-01-31" as ISODate)).toBe("jan 2026")
+  })
+})
+
+// ─── numerarEras ──────────────────────────────────────────────────────────────
+
+describe("numerarEras", () => {
+  const p1 = plano({ id: "p1", criado_em: "2026-05-01T10:00:00.000Z", vigencia: vigenciaArquivada("2026-05-01", "2026-06-01") })
+  const p2 = plano({ id: "p2", criado_em: "2026-06-01T10:00:00.000Z", vigencia: vigenciaArquivada("2026-06-01", "2026-07-01") })
+  const p3 = plano({ id: "p3", criado_em: "2026-07-01T10:00:00.000Z", vigencia: vigenciaAtiva("2026-07-01") })
+
+  const semRegistros = () => 0
+
+  it("numera pelo COMEÇO: a era mais antiga é 1, a mais recente é a última", () => {
+    // Entrada em ordem de exibição (recente primeiro); a saída preserva a ordem.
+    const eras = numerarEras([p3, p2, p1], semRegistros)
+    expect(eras.map((e) => [e.plano.id, e.numero])).toEqual([["p3", 3], ["p2", 2], ["p1", 1]])
+  })
+
+  it("o número da era antiga NÃO muda quando uma nova era começa", () => {
+    const antes = numerarEras([p2, p1], semRegistros)
+    const depois = numerarEras([p3, p2, p1], semRegistros)
+    const numeroDe = (eras: ReturnType<typeof numerarEras>, id: string) =>
+      eras.find((e) => e.plano.id === id)?.numero
+    expect(numeroDe(antes, "p1")).toBe(1)
+    expect(numeroDe(depois, "p1")).toBe(1)
+    expect(numeroDe(antes, "p2")).toBe(2)
+    expect(numeroDe(depois, "p2")).toBe(2)
+  })
+
+  it("marca como ativa só a era do Plano Ativo e traz a vigência formatada", () => {
+    const [ativa, arquivada] = numerarEras([p3, p2], semRegistros)
+    expect(ativa.ativa).toBe(true)
+    expect(ativa.vigencia).toEqual({ inicio: "1 jul 2026", fim: "atual", ativo: true })
+    expect(arquivada.ativa).toBe(false)
+    expect(arquivada.vigencia).toEqual({ inicio: "1 jun 2026", fim: "1 jul 2026", ativo: false })
+  })
+
+  it("resolve os dias registrados pela função recebida", () => {
+    const dias = new Map([["p1", 4], ["p2", 0], ["p3", 11]])
+    const eras = numerarEras([p3, p2, p1], (p) => dias.get(p.id) ?? 0)
+    expect(eras.map((e) => e.diasRegistrados)).toEqual([11, 0, 4])
+  })
+
+  it("lista vazia devolve lista vazia", () => {
+    expect(numerarEras([], semRegistros)).toEqual([])
+  })
+})
+
+// ─── resumirEras ──────────────────────────────────────────────────────────────
+
+describe("resumirEras", () => {
+  const p1 = plano({ id: "p1", criado_em: "2026-05-01T10:00:00.000Z", vigencia: vigenciaArquivada("2026-05-01", "2026-06-01") })
+  const p2 = plano({ id: "p2", criado_em: "2026-06-01T10:00:00.000Z", vigencia: vigenciaArquivada("2026-06-01", "2026-07-01") })
+  const p3 = plano({ id: "p3", criado_em: "2026-07-01T10:00:00.000Z", vigencia: vigenciaAtiva("2026-07-01") })
+
+  it("conta as eras, soma os dias e cobre do começo da primeira ao fim da última", () => {
+    const dias = new Map([["p1", 4], ["p2", 7], ["p3", 2]])
+    const resumo = resumirEras(numerarEras([p3, p2, p1], (p) => dias.get(p.id) ?? 0))
+    expect(resumo).toEqual({
+      totalEras: 3,
+      desde: "2026-05-01",
+      periodo: "1 mai 2026 → atual",
+      diasRegistrados: 13,
+    })
+  })
+
+  it("sem Plano Ativo, o período termina na data real da última era", () => {
+    const resumo = resumirEras(numerarEras([p2, p1], () => 0))
+    expect(resumo.periodo).toBe("1 mai 2026 → 1 jul 2026")
+  })
+
+  it("uma era só: o período vai do início dela até 'atual'", () => {
+    const resumo = resumirEras(numerarEras([p3], () => 5))
+    expect(resumo).toEqual({
+      totalEras: 1,
+      desde: "2026-07-01",
+      periodo: "1 jul 2026 → atual",
+      diasRegistrados: 5,
+    })
+  })
+
+  it("sem eras: travessão no período e nada a contar", () => {
+    expect(resumirEras([])).toEqual({
+      totalEras: 0,
+      desde: null,
+      periodo: "—",
+      diasRegistrados: 0,
+    })
+  })
+})
+
+// ─── formatarContagemEras ─────────────────────────────────────────────────────
+
+describe("formatarContagemEras", () => {
+  it("pluraliza e reduz o começo a mês/ano", () => {
+    expect(formatarContagemEras(3, "2026-05-01" as ISODate)).toBe("3 eras desde mai 2026")
+    expect(formatarContagemEras(1, "2026-07-16" as ISODate)).toBe("1 era desde jul 2026")
+  })
+
+  it("sem eras (ou sem começo) vira travessão", () => {
+    expect(formatarContagemEras(0, null)).toBe("—")
+    expect(formatarContagemEras(2, null)).toBe("—")
   })
 })
 

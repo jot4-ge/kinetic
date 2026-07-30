@@ -66,6 +66,14 @@ voltar + os três botões de tema "Sistema / Claro / Escuro") precisa de ~442px 
 força **scroll horizontal na página inteira**. Medido em 386px de viewport:
 `documentElement.scrollWidth` = 442 contra `innerWidth` = 386.
 
+Reconfirmado na fase de refino do Histórico (harness Playwright, Chromium), com
+dois detalhes novos: `scrollWidth` é **constante em 443px** a 386, 390 e 414 de
+viewport — o cabeçalho não reflui, então alargar a tela só reduz a sobra até
+sumir; e o `<header>` em si mede 419px, os 443 saindo dele mais o padding do
+`app-shell`. Sob emulação mobile o sintoma muda de forma mas não de causa: o
+viewport de layout se alarga para 429px em vez de gerar barra de rolagem, o que
+encolhe todo o conteúdo da tela. Vale para qualquer captura mobile do app.
+
 **É do cabeçalho, não de uma tela.** Reproduz idêntico em `/hoje` e
 `/calendario`, e nenhum elemento das telas participa do overflow — os culpados
 são o container do seletor de tema e o último botão. Encontrado ao verificar o
@@ -83,3 +91,64 @@ A terceira é a que mais reduz ruído permanente do cabeçalho, mas troca
 descoberta por profundidade — decisão do dono do projeto. Vale casar com o
 retoque de ornamentação acima, já que o cabeçalho é ambiente puro e seria
 tocado de qualquer forma.
+
+---
+
+## Modo "dados de demonstração" (popular e limpar sob demanda)
+
+Várias telas só mostram o que sabem fazer com **histórico acumulado**: o
+Histórico precisa de mais de um Plano para a timeline de eras existir, o
+Calendário precisa de dias registrados com aderências variadas para os 3 níveis
+do indicador aparecerem, e a tela "hoje" precisa de um Plano Ativo. Um banco
+recém-criado não tem nada disso, então demonstrar ou verificar visualmente essas
+telas hoje exige **semear dados à mão no IndexedDB** — foi o que aconteceu na
+fase de refino do Histórico, importando os módulos da app pelo console para criar
+3 Planos e 14 Registros.
+
+O problema não é o trabalho de escrever o script: é que os dados de teste **caem
+no mesmo banco do uso real**, sem marcador de origem, e depois precisam ser
+identificados e removidos um a um. Deu certo naquela vez porque os ids semeados
+eram sintéticos (`plano-1`, `reg-7`) e o app real usa `crypto.randomUUID()` — mas
+isso é sorte de convenção, não uma garantia. Um registro de demonstração com id
+real seria indistinguível de um registro verdadeiro.
+
+Direções candidatas, nenhuma decidida:
+
+- **Popular/limpar sob demanda**, com um par de ações explícitas (tela de Perfil,
+  ou rota escondida em dev) que criam um conjunto fixo e determinístico e sabem
+  desfazê-lo inteiro. O ponto forte é a limpeza ser garantida por construção.
+- **Marcador de origem no dado** (ex: campo `origem: "demo"` nos tipos, ou um
+  prefixo reservado de id), o que torna a remoção cirúrgica trivial e segura —
+  mas encosta no domínio para servir a uma necessidade de ferramenta.
+- **Banco separado** para demonstração: `openDb` já recebe o nome do banco (é o
+  que os testes de integração usam), então um toggle poderia apontar a app para
+  `rotina-sync-demo` e deixar o banco real intocado. É a opção que mais garante
+  isolamento e a que menos toca o domínio; em troca, os dois mundos não se
+  misturam nem quando isso seria útil.
+
+A terceira parece a mais promissora justamente por já existir a costura
+(`openDb(name)` + `CamadaDePersistencia` injetada, ADR-0007) — trocar o adapter é
+uma mudança isolada por desenho.
+
+> **Metade resolvida: a verificação visual das fases de UI.** Existe agora um
+> harness de teste que injeta fixtures ricas sem tocar banco nenhum — não um
+> banco separado, mas a ausência de banco:
+>
+> - `e2e/harness/adapter-memoria.ts` implementa a `CamadaDePersistencia` sobre
+>   `Map`s. Não importa `openDb`, não abre IndexedDB, não escreve localStorage.
+> - `e2e/harness/index.html` + `main-harness.tsx` são uma entrada Vite paralela.
+>   `src/main.tsx` (que abre o banco) fica intocado, então não há flag de runtime
+>   nem ramo condicional pelo qual uma fixture possa vazar para produção — o
+>   bundle de produção não muda de hash com o harness presente.
+> - O isolamento é **asserção, não comentário**: o teste "harness não abre banco
+>   nenhum" exige `indexedDB.databases() === []` e `localStorage.length === 0`.
+>   Trocar o adapter em memória por um real quebra a suíte.
+>
+> Isso encerra a parte "demonstrar/verificar telas que dependem de histórico
+> acumulado" — que era o que tinha causado a semeadura manual no banco real.
+>
+> **O que resta da ideia** é o modo-demo para o **usuário final**: popular o app
+> com dados ricos sob demanda para demonstrá-lo a outra pessoa, no navegador de
+> verdade. O harness não serve a isso (vive só no ambiente de teste), e é para
+> esse caso que as três direções acima continuam abertas — com a terceira ainda
+> sendo a mais promissora, pelo mesmo motivo.

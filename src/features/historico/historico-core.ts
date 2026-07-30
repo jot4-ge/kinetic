@@ -29,6 +29,13 @@ export function formatarDataCurta(iso: ISODate): string {
   return `${Number(dia)} ${mesLabel} ${ano}`
 }
 
+// "2026-07-12" → "jul 2026". Granularidade de mês para quando o dia exato não
+// acrescenta nada — o começo da jornada é um marco, não um horário.
+export function formatarMesAno(iso: ISODate): string {
+  const [ano, mes] = iso.split("-")
+  return `${MESES[Number(mes) - 1] ?? mes} ${ano}`
+}
+
 // ─── Lista de Planos ────────────────────────────────────────────────────────
 
 // Ordena do mais recente ao mais antigo. Chave: criado_em (timestamp completo),
@@ -55,6 +62,84 @@ export function formatarVigencia(plano: Plano): VigenciaExibicao {
     return { inicio, fim: "atual", ativo: true }
   }
   return { inicio, fim: formatarDataCurta(plano.vigencia.fim), ativo: false }
+}
+
+// ─── Eras ───────────────────────────────────────────────────────────────────
+// "Era" é a leitura de produto de um Plano no Histórico: cada Plano é um
+// capítulo numerado da jornada. Só a apresentação ganha o nome — o domínio
+// continua falando "Plano" (ADR-0002), e nada aqui altera o dado.
+//
+// O número é de ordem CRONOLÓGICA (1 = a primeira era), não da posição na
+// lista. A lista é exibida do presente para o passado, então numerar pela
+// posição faria a era 1 do usuário virar outra a cada regeneração. Numerando
+// pelo começo, "minha era 1" significa sempre o mesmo capítulo.
+//
+// Algarismos arábicos, não romanos: a numeração escala sem virar charada
+// (a 14ª era é "14", não "XIV") e cai na zona de dados, que é sempre limpa.
+
+export interface Era {
+  readonly plano: Plano
+  readonly numero: number
+  readonly vigencia: VigenciaExibicao
+  readonly ativa: boolean
+  readonly diasRegistrados: number
+}
+
+// Recebe os Planos JÁ ordenados por ordenarPlanosRecentesPrimeiro e devolve as
+// Eras na mesma ordem (presente → passado), cada uma com seu número
+// cronológico. `diasRegistradosDe` resolve quantos dias foram registrados sob o
+// Plano — passado como função para o núcleo não depender de como o chamador
+// guarda os Registros, do mesmo jeito que aderencia-core.resumirMes faz.
+export function numerarEras(
+  planosRecentesPrimeiro: readonly Plano[],
+  diasRegistradosDe: (plano: Plano) => number,
+): Era[] {
+  const total = planosRecentesPrimeiro.length
+  return planosRecentesPrimeiro.map((plano, i) => {
+    const vigencia = formatarVigencia(plano)
+    return {
+      plano,
+      numero: total - i,
+      vigencia,
+      ativa: vigencia.ativo,
+      diasRegistrados: diasRegistradosDe(plano),
+    }
+  })
+}
+
+// Resumo de todas as Eras — o painel lateral sem nenhuma era em foco.
+export interface ResumoEras {
+  readonly totalEras: number
+  // Início da PRIMEIRA era (a mais antiga). null quando não há era alguma.
+  readonly desde: ISODate | null
+  // "1 jun 2026 → atual": do começo da primeira ao fim da última (que é "atual"
+  // enquanto houver Plano Ativo). Travessão quando não há era alguma — a mesma
+  // grafia que o painel do calendário usa para métrica sem valor.
+  readonly periodo: string
+  readonly diasRegistrados: number
+}
+
+// Espera as Eras na ordem de numerarEras (recente primeiro).
+export function resumirEras(eras: readonly Era[]): ResumoEras {
+  const primeira = eras[eras.length - 1]
+  const ultima = eras[0]
+
+  return {
+    totalEras: eras.length,
+    desde: primeira?.plano.vigencia.inicio ?? null,
+    periodo: primeira
+      ? `${formatarDataCurta(primeira.plano.vigencia.inicio)} → ${ultima.vigencia.fim}`
+      : "—",
+    diasRegistrados: eras.reduce((soma, era) => soma + era.diasRegistrados, 0),
+  }
+}
+
+// "3 eras desde jun 2026" — a legenda do painel. Singular sem "1" solto seria
+// mais bonito ("uma era"), mas contagem é dado: numeral, sempre.
+export function formatarContagemEras(totalEras: number, desde: ISODate | null): string {
+  if (totalEras === 0 || desde === null) return "—"
+  const contagem = totalEras === 1 ? "1 era" : `${totalEras} eras`
+  return `${contagem} desde ${formatarMesAno(desde)}`
 }
 
 // ─── Registros de um Plano ──────────────────────────────────────────────────

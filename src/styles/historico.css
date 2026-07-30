@@ -1,0 +1,555 @@
+/* ─── Histórico — "Suas eras" (ADR-0002 · ornamentação, ADR-0016) ─────────────
+   Duas visões, um só vocabulário:
+
+   1. /historico          — a lista de Planos como TIMELINE de eras. Cada Plano é
+                            um capítulo numerado da jornada; a linha vertical os
+                            conecta, mais brilhante no presente (topo) e
+                            desvanecendo para o passado.
+   2. /historico/:planoId — os dias registrados daquela era, cada um com o mesmo
+                            indicador de 3 pontos do calendário
+                            (indicador-aderencia.css).
+
+   A régua do brand §3.2, igual à do calendário:
+     AMBIENTE (timeline, marcos, molduras, meandro, frontão) → ornamento à
+       vontade, em ouro de baixa opacidade.
+     DADOS (kcal, macros, vigência, datas) → mono, contraste cheio, nada por
+       cima. O único ouro pleno sobre dado é o da métrica em destaque.
+
+   Hierarquia ativo vs. arquivado: a era ativa tem moldura ouro, degradê no topo,
+   selo ATUAL e marco com glow; as arquivadas são sóbrias mas ÍNTEGRAS — hairline
+   normal, texto em contraste cheio, marco com anel de ouro. Capítulo encerrado
+   não é capítulo apagado.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.historico {
+  --ouro-moldura: rgba(201, 168, 76, 0.22);
+  --ouro-moldura-ativa: rgba(201, 168, 76, 0.55);
+  --ouro-filete: rgba(201, 168, 76, 0.35);
+  /* O anel do marco é mais forte que a moldura de card: é ele que faz a era
+     arquivada ler como um NÓ na linha, e não como um número solto no espaço.
+     Sóbrio, mas presente — capítulo encerrado continua sendo capítulo. */
+  --ouro-marco: rgba(201, 168, 76, 0.45);
+  --ouro-meandro: 0.20;
+  /* A linha do tempo: ouro quase pleno no presente, quase ausente no passado.
+     Não é "o passado importa menos" — é profundidade, como as esculturas que
+     emergem da escuridão (brand §4.3). */
+  --ouro-linha-presente: rgba(201, 168, 76, 0.55);
+  --ouro-linha-passado: rgba(201, 168, 76, 0.07);
+  --marco-fundo: var(--bg);
+  --card-fundo: var(--bg-elevated);
+  --card-fundo-hover: #FFFFFF;
+  --degrade-ativa: rgba(201, 168, 76, 0.07);
+
+  padding-top: var(--space-5);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .historico {
+    --ouro-moldura: rgba(201, 168, 76, 0.26);
+    --ouro-meandro: 0.26;
+    --marco-fundo: #201C18;
+    --card-fundo-hover: #201C18;
+    --degrade-ativa: rgba(201, 168, 76, 0.09);
+  }
+}
+
+:root[data-theme="dark"] .historico {
+  --ouro-moldura: rgba(201, 168, 76, 0.26);
+  --ouro-meandro: 0.26;
+  --marco-fundo: #201C18;
+  --card-fundo-hover: #201C18;
+  --degrade-ativa: rgba(201, 168, 76, 0.09);
+}
+
+:root[data-theme="light"] .historico {
+  --ouro-moldura: rgba(201, 168, 76, 0.22);
+  --ouro-meandro: 0.20;
+  --marco-fundo: var(--bg);
+  --card-fundo-hover: #FFFFFF;
+  --degrade-ativa: rgba(201, 168, 76, 0.07);
+}
+
+/* ─── Cabeçalho da tela — frontão + meandro ───────────────────────────────── */
+
+/* Frontão: o título ladeado por filetes dourados, como o topo de um templo
+   (brand §7.3). Cinzel titula — e aqui titula uma metáfora, não um dado. */
+.historico__frontao {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--text);
+}
+
+.historico__frontao-texto {
+  white-space: nowrap;
+}
+
+.historico__frontao-filete {
+  flex: 1;
+  height: 1px;
+  min-width: var(--space-3);
+  background: linear-gradient(90deg, transparent, var(--ouro-filete), transparent);
+}
+
+/* O filete da esquerda é curto e fixo: o título fica ancorado à esquerda (como
+   em toda tela do app), com o filete longo correndo até a borda direita. */
+.historico__frontao-filete--esq {
+  flex: none;
+  width: var(--space-4);
+  background: linear-gradient(90deg, transparent, var(--ouro-filete));
+}
+
+.historico__subtitulo {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+/* Meandro grego — faixa de cabeçalho separando o título do conteúdo
+   (brand §7.3). SVG inline: padrão geométrico nunca vai em raster. */
+.historico__meandro {
+  display: block;
+  height: 12px;
+  margin: var(--space-4) 0 var(--space-5);
+  opacity: var(--ouro-meandro);
+  background-repeat: repeat-x;
+  background-size: auto 12px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='16' viewBox='0 0 20 16'%3E%3Cg fill='none' stroke='%23C9A84C' stroke-width='1.5'%3E%3Cpath d='M0 15h20'/%3E%3Cpath d='M4 15V4h12v8H8V8h4'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* ─── Layout: main + aside ────────────────────────────────────────────────────
+   Mesmo ritmo de desktop de "hoje" e do calendário: breakpoint 768px, aside de
+   320px, sticky. Um só padrão de desktop no app. */
+
+.historico__grid {
+  display: grid;
+  gap: var(--space-5);
+}
+
+@media (min-width: 768px) {
+  .historico__grid {
+    grid-template-columns: minmax(0, 1fr) 320px;
+    align-items: start;
+  }
+
+  .historico__painel {
+    position: sticky;
+    top: var(--space-5);
+  }
+}
+
+/* ─── Timeline das eras ───────────────────────────────────────────────────── */
+
+.eras {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-4);
+}
+
+/* A linha. Desvanece de cima (presente) para baixo (passado) e passa POR TRÁS
+   dos marcos, que a interrompem — cada era é um nó, não um adesivo colado.
+   Chega a transparente ANTES da borda inferior: a jornada some no passado, não
+   é cortada por uma régua. Por isso o gradiente tem três paradas, e não duas. */
+.eras::before {
+  content: "";
+  position: absolute;
+  top: 6px;
+  bottom: 0;
+  left: 13px;
+  width: 1px;
+  background: linear-gradient(
+    180deg,
+    var(--ouro-linha-presente) 0%,
+    var(--ouro-linha-passado) 78%,
+    transparent 96%
+  );
+  pointer-events: none;
+}
+
+.eras__item {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: start;
+}
+
+@media (min-width: 768px) {
+  .eras__item {
+    gap: var(--space-4);
+  }
+}
+
+/* ─── Marco: o nó da era na linha ─────────────────────────────────────────── */
+
+.eras__marco {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin-top: var(--space-4);
+  border: 1px solid var(--ouro-marco);
+  border-radius: 999px;
+  background: var(--marco-fundo);
+}
+
+/* O numeral é DADO (qual capítulo é este): mono, sem ornamento por cima. */
+.eras__numero {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  line-height: 1;
+  color: var(--text-muted);
+}
+
+/* Marco da era ativa: círculo cheio de ouro com glow contido. Glow é sombra
+   estática, nunca pulsante (brand §7.3: ornamento não pisca). */
+.eras__item.is-ativa .eras__marco {
+  border-color: var(--accent);
+  background: var(--accent);
+  box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.12), 0 0 12px rgba(201, 168, 76, 0.28);
+}
+
+.eras__item.is-ativa .eras__numero {
+  color: var(--on-accent);
+  font-weight: 500;
+}
+
+/* ─── Card de era ─────────────────────────────────────────────────────────── */
+
+.eras__card {
+  position: relative;
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: var(--space-4) var(--space-4) var(--space-5);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-lg);
+  background: var(--card-fundo);
+  color: var(--text);
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) ease,
+    border-color var(--duration-fast) ease,
+    box-shadow var(--duration-fast) ease;
+}
+
+@media (min-width: 768px) {
+  .eras__card {
+    padding: var(--space-5) var(--space-5) var(--space-5);
+  }
+}
+
+/* Filete de remate no topo do card — a moldura mínima que faz de um retângulo
+   uma peça (brand §8). Recuado nas pontas para ler como remate, não como borda. */
+.eras__card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: var(--space-5);
+  right: var(--space-5);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--ouro-filete), transparent);
+  pointer-events: none;
+}
+
+.eras__card:hover {
+  background: var(--card-fundo-hover);
+  border-color: var(--ouro-moldura);
+}
+
+.eras__card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* A era ativa: moldura ouro e degradê descendo do topo. O degradê fica na
+   MOLDURA (fundo do card), nunca atrás dos números — brand §7.2. */
+.eras__item.is-ativa .eras__card {
+  border-color: var(--ouro-moldura-ativa);
+  background:
+    linear-gradient(180deg, var(--degrade-ativa), transparent 62%),
+    var(--card-fundo);
+  box-shadow: 0 0 16px rgba(201, 168, 76, 0.08);
+}
+
+.eras__item.is-ativa .eras__card::before {
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0.6;
+}
+
+/* ─── Conteúdo do card: vigência, selo, objetivo, metas ───────────────────── */
+
+.eras__topo {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+/* Vigência é DADO: mono tabular, limpo. */
+.eras__vigencia {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.eras__vigencia-atual {
+  color: var(--accent-text);
+}
+
+.eras__selo {
+  flex: none;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--on-accent);
+  background: var(--accent);
+  border-radius: 999px;
+  padding: 2px var(--space-2);
+}
+
+.eras__objetivo {
+  display: block;
+  margin: var(--space-3) 0 var(--space-4);
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--text);
+}
+
+/* As cinco metas. No mobile a linha única de 5 colunas espremeria "3075 kcal"
+   em duas linhas — o número quebrado do seu rótulo é exatamente o que a zona de
+   dados não pode fazer. Por isso 3 colunas no estreito, 5 na largura. */
+.eras__metas {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3) var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-hairline);
+}
+
+@media (min-width: 768px) {
+  .eras__metas {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+.eras__meta {
+  min-width: 0;
+  text-align: center;
+}
+
+.eras__meta-valor {
+  display: block;
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-size: 15px;
+  line-height: 1.2;
+  white-space: nowrap;
+  color: var(--text);
+}
+
+.eras__meta-valor.is-destaque {
+  color: var(--accent-text);
+}
+
+.eras__meta-unidade {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.eras__meta-rotulo {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+
+/* ─── Painel lateral (mesma gramática do painel do calendário) ────────────── */
+
+.historico__painel {
+  padding: var(--space-4) var(--space-4) var(--space-5);
+  border: 1px solid var(--ouro-moldura);
+  border-radius: var(--radius-lg);
+  background: var(--bg-elevated);
+}
+
+.historico__painel-titulo {
+  margin: 0 0 var(--space-1);
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.historico__painel-legenda {
+  display: block;
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--ouro-filete);
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.historico__metrica {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-bottom: var(--space-4);
+}
+
+.historico__metrica-valor {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-size: 30px;
+  line-height: 1;
+  color: var(--accent-text);
+}
+
+.historico__metrica-unidade {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.historico__metrica-rotulo {
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.historico__linha {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-top: 1px solid var(--border-hairline);
+  font-size: 13px;
+}
+
+.historico__linha-rotulo {
+  color: var(--text-muted);
+}
+
+.historico__linha-valor {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  text-align: right;
+}
+
+/* ─── Visão 2: dias registrados de uma era ────────────────────────────────── */
+
+.dias {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+
+.dias__item {
+  position: relative;
+  padding: var(--space-4) var(--space-4) var(--space-3);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-lg);
+  background: var(--bg-elevated);
+}
+
+/* Mesmo remate dos cards de era — as duas visões são a mesma peça. */
+.dias__item::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: var(--space-5);
+  right: var(--space-5);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--ouro-filete), transparent);
+  pointer-events: none;
+}
+
+/* Cabeçalho do dia: a data em destaque à esquerda, o indicador de aderência à
+   direita — o mesmo desenho de 3 pontos do calendário, no mesmo papel de
+   "como foi o dia" de relance. */
+.dias__cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border-hairline);
+}
+
+.dias__data {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.dias__atributo {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-1) 0;
+  font-size: 13px;
+}
+
+.dias__atributo-rotulo {
+  flex: none;
+  color: var(--text-muted);
+}
+
+.dias__atributo-valor {
+  color: var(--text);
+  text-align: right;
+}
+
+.dias__atributo-valor.is-mono {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+}
+
+.dias__ausente {
+  color: var(--text-muted);
+}
+
+/* Estado vazio (o busto, brand §7.2) — emoldurado como as demais peças. */
+.historico__vazio {
+  padding: var(--space-6) var(--space-5);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-lg);
+  background: var(--bg-elevated);
+}
+
+.historico__vazio-titulo {
+  margin-bottom: var(--space-2);
+  color: var(--text);
+}
+
+.historico__vazio-texto {
+  font-size: 13px;
+  color: var(--text-muted);
+}

@@ -19,6 +19,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import type { ISODate } from "@/types"
+import { IndicadorAderencia } from "@/components/IndicadorAderencia"
 import {
   gerarGradeMes,
   mesAnterior,
@@ -37,7 +38,6 @@ import {
 import {
   rotuloNivelAderencia,
   formatarDiasRegistrados,
-  type NivelAderencia,
   type ResumoDia,
   type ResumoMes,
 } from "./aderencia-core"
@@ -80,22 +80,6 @@ function IconeChevron({ direcao }: { direcao: "esquerda" | "direita" }) {
       strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d={d} />
     </svg>
-  )
-}
-
-// Indicador de aderência do dia. nivel null = dia registrado cuja proporção não é
-// calculável (sem Plano resolvível, ou dia sem refeições previstas): cai no ponto
-// único, que continua honesto — afirma "tem registro" sem afirmar quanto.
-function IndicadorAderencia({ nivel }: { nivel: NivelAderencia | null }) {
-  if (nivel === null) {
-    return <span className="calendario__ponto-unico" aria-hidden="true" />
-  }
-  return (
-    <span className="calendario__pontos" aria-hidden="true">
-      {[0, 1, 2].map((i) => (
-        <span key={i} className={i < nivel ? "calendario__ponto is-aceso" : "calendario__ponto"} />
-      ))}
-    </span>
   )
 }
 

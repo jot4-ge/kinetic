@@ -29,6 +29,11 @@ dist-ssr
 # Artefatos locais do Playwright MCP (screenshots, cache de sessão)
 .playwright-mcp/
 
+# Saída do harness visual (e2e/): capturas e artefatos de execução são gerados
+# sob demanda por `npm run test:visual` — evidência para revisão, não fonte.
+e2e/capturas/
+e2e/.saida/
+
 # Cache de bytecode Python (gerado localmente, específico da máquina/versão)
 __pycache__/
 *.pyc

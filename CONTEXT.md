@@ -26,6 +26,10 @@ _Evitar_: plano antigo, plano inativo, plano descartado
 O intervalo de datas durante o qual um Plano foi (ou é) o Plano Ativo do Usuário. Definido por data de início e, para Planos Arquivados, data de arquivamento.
 _Evitar_: duração, período do plano
 
+**Era**:
+Nome de **apresentação** de um Plano na tela de Histórico ("Suas eras") — cada Plano é um capítulo numerado da jornada do Usuário. Não é uma entidade nova: não existe no domínio, na persistência nem em nenhum tipo; é só como a UI chama um Plano quando o exibe como história vivida. A numeração é cronológica (era 1 = o Plano mais antigo) e não muda quando um novo Plano é criado.
+_Evitar_: usar "Era" fora da UI de Histórico — em domínio, dados e código de motor, é Plano
+
 **Usuário**:
 A pessoa que possui Planos e gera Registros de Aderência. Pode ter um Plano Ativo e múltiplos Planos Arquivados. É o dono do Plano — mas não necessariamente quem o criou ou quem tem permissão para editá-lo (ver ADR-0004).
 _Evitar_: pessoa, atleta, cliente
