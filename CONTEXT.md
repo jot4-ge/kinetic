@@ -43,7 +43,7 @@ O gasto calórico de repouso do Usuário, calculado pela fórmula Mifflin-St Jeo
 _Evitar_: metabolismo basal, BMR
 
 **Camada de Persistência**:
-A abstração que isola "onde os dados moram" do restante da aplicação. Na Camada 1, usa IndexedDB local. Na Camada 2, será substituída por chamadas a um backend (provável Supabase) sem alterar lógica de negócio ou componentes. Toda leitura e escrita de dados passa por ela — nenhuma parte da aplicação acessa IndexedDB ou API diretamente.
+A abstração que isola "onde os dados moram" do restante da aplicação. Na Camada 1, usa IndexedDB local. Na Camada 2, será substituída por chamadas a um backend (provável Supabase) sem alterar lógica de negócio ou componentes. Toda leitura e escrita de dados passa por ela — nenhuma parte da aplicação acessa IndexedDB ou API diretamente. A Camada 2 (multi-usuário, login, sincronização) é escopo deliberadamente adiado para a V2 — a v1 inteira roda na Camada 1 (ADR-0017).
 _Evitar_: storage, banco de dados, persistence layer
 
 **Banco de Opções**:

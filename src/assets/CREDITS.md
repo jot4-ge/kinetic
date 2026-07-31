@@ -6,7 +6,7 @@ As esculturas usadas na interface são obras de **domínio público** do acervo
 
 | Arquivo | Uso na interface |
 |---|---|
-| `escultura-cabeca.webp` | Splash / tela de abertura |
+| `escultura-cabeca.webp` | Splash / tela de abertura; medalhão do Perfil |
 | `escultura-busto.webp` | Estados vazios |
 
 Os arquivos `escultura-cabeca.jpg` e `escultura-busto.jpg` são os originais sem
