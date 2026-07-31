@@ -83,25 +83,10 @@ function Shell({ children }: { children: React.ReactNode }) {
     pathname.startsWith("/historico")
   return (
     <div className={ampla ? "app-shell app-shell--ampla" : "app-shell"}>
-      <header
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "var(--space-4)",
-        }}
-      >
-        <span
-          style={{
-            fontFamily: "var(--font-display)",
-            fontSize: "22px",
-            letterSpacing: "var(--tracking-wordmark)",
-            color: "var(--text)",
-          }}
-        >
-          KINETIC
-        </span>
-        <div style={{ display: "flex", alignItems: "center", gap: "var(--space-2)" }}>
+      <div className="app-header-meandro" aria-hidden="true" />
+      <header className="app-header">
+        <span className="app-header__wordmark">KINETIC</span>
+        <div className="app-header__acoes">
           <AcaoHeader />
           <ThemeToggle />
         </div>

@@ -1,0 +1,53 @@
+/* ─── Header do app (compartilhado por todas as telas) — ornamentação ────────
+   Meandro no topo (brand §7.3), coerente com o topo do calendário e do
+   histórico — a assinatura que aparece em toda tela. Ambiente puro: fica
+   ACIMA do wordmark e das ações, nunca sobre eles.
+
+   O layout do header (wordmark + ações) era estilo inline em App.tsx; virou
+   classe aqui só para poder receber o meandro como irmão, sem repetir estilo. */
+
+.app-header-meandro {
+  display: block;
+  height: 10px;
+  margin-bottom: var(--space-4);
+  opacity: var(--ouro-meandro-header, 0.18);
+  pointer-events: none;
+  background-repeat: repeat-x;
+  background-size: auto 10px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='16' viewBox='0 0 20 16'%3E%3Cg fill='none' stroke='%23C9A84C' stroke-width='1.5'%3E%3Cpath d='M0 15h20'/%3E%3Cpath d='M4 15V4h12v8H8V8h4'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ouro-meandro-header: 0.24;
+  }
+}
+
+:root[data-theme="dark"] {
+  --ouro-meandro-header: 0.24;
+}
+
+:root[data-theme="light"] {
+  --ouro-meandro-header: 0.18;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.app-header__wordmark {
+  flex: none;
+  font-family: var(--font-display);
+  font-size: 22px;
+  letter-spacing: var(--tracking-wordmark);
+  color: var(--text);
+}
+
+.app-header__acoes {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}

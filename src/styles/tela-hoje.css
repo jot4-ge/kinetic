@@ -36,8 +36,28 @@
 
 /* ─── Cabeçalho do dia ─────────────────────────────────────────────────────── */
 
+/* Ouro de ambiente (brand §4.3): mesma régua do calendário e do histórico —
+   literais porque o ouro não muda entre light e dark, só o quanto ele
+   precisa aparecer sobre cada fundo. */
 .hoje {
+  --ouro-moldura: rgba(201, 168, 76, 0.22);
+  --ouro-filete: rgba(201, 168, 76, 0.35);
+
   padding-top: var(--space-5);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .hoje {
+    --ouro-moldura: rgba(201, 168, 76, 0.26);
+  }
+}
+
+:root[data-theme="dark"] .hoje {
+  --ouro-moldura: rgba(201, 168, 76, 0.26);
+}
+
+:root[data-theme="light"] .hoje {
+  --ouro-moldura: rgba(201, 168, 76, 0.22);
 }
 
 .hoje__cabecalho {
@@ -47,11 +67,25 @@
   gap: var(--space-3);
 }
 
+.hoje__titulo-bloco {
+  min-width: 0;
+  flex: 1;
+}
+
 .hoje__data {
   font-family: var(--font-data);
   font-variant-numeric: tabular-nums;
   font-size: 13px;
   color: var(--text-muted);
+}
+
+/* Frontão do título do dia: texto ladeado por filete dourado que desvanece
+   (brand §7.3), mesma linguagem do frontão do histórico e do calendário. */
+.hoje__titulo-linha {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: var(--space-1) 0 var(--space-4);
 }
 
 .hoje__titulo {
@@ -61,7 +95,13 @@
   letter-spacing: 0.01em;
   color: var(--text);
   text-wrap: balance;
-  margin: var(--space-1) 0 var(--space-4);
+}
+
+.hoje__titulo-filete {
+  flex: 1;
+  height: 1px;
+  min-width: var(--space-4);
+  background: linear-gradient(90deg, var(--ouro-filete), transparent);
 }
 
 .hoje__erro {
@@ -100,6 +140,7 @@
 /* ─── Barra de progresso (jornada + água) ──────────────────────────────────── */
 
 .barra {
+  position: relative;
   height: 6px;
   background: var(--bg);
   border: 1px solid var(--border-hairline);
@@ -112,6 +153,18 @@
   background: var(--accent);
   border-radius: 999px;
   transition: width var(--duration-base) ease;
+}
+
+/* A jornada do dia é a métrica de maior presença da tela: barra mais alta,
+   moldura em ouro de ambiente e glow contido (estático — brand §7.3) no
+   preenchimento, que já é ouro de significado (progresso real). */
+.hoje__jornada .barra {
+  height: 10px;
+  border-color: var(--ouro-moldura);
+}
+
+.hoje__jornada .barra__preenchimento {
+  box-shadow: 0 0 10px rgba(201, 168, 76, 0.35);
 }
 
 /* ─── Grid: coluna principal + aside ───────────────────────────────────────── */
@@ -134,7 +187,12 @@
   }
 }
 
+/* Título de seção com filete que desvanece — mesmo frontão do título do dia,
+   em escala menor (brand §7.3: um vocabulário, repetido). */
 .hoje__secao-titulo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
   font-family: var(--font-display);
   font-size: 15px;
   font-weight: 500;
@@ -143,9 +201,16 @@
   margin-bottom: var(--space-3);
 }
 
+.hoje__secao-titulo-filete {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--ouro-filete), transparent);
+}
+
 /* ─── Card de refeição ─────────────────────────────────────────────────────── */
 
 .refeicao {
+  position: relative;
   background: var(--bg-elevated);
   border: 1px solid var(--border-hairline);
   border-left: 3px solid transparent;
@@ -153,6 +218,21 @@
   padding: var(--space-4);
   margin-bottom: var(--space-3);
   transition: opacity var(--duration-base) ease;
+}
+
+/* Moldura: filete de remate no topo, recuado nas pontas (brand §8) — a mesma
+   peça-emoldurada dos cards de era do histórico. Função distinta do eixo
+   lateral dourado de ".refeicao--cumprida" (borda esquerda): ambiente vs.
+   significado, cada um na sua aresta. */
+.refeicao::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: var(--space-4);
+  right: var(--space-4);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--ouro-filete), transparent);
+  pointer-events: none;
 }
 
 /* Cumprida — recompensa visual: eixo lateral dourado + kcal em ouro. */
@@ -289,11 +369,25 @@
 /* ─── Card genérico (água, atividade, checklist) ───────────────────────────── */
 
 .cartao {
+  position: relative;
   background: var(--bg-elevated);
   border: 1px solid var(--border-hairline);
   border-radius: var(--radius-lg);
   padding: var(--space-5);
   margin-bottom: var(--space-4);
+}
+
+/* Mesmo remate dos cards de refeição e dos cards de era do histórico — a
+   moldura mínima que faz de um retângulo uma peça (brand §8). */
+.cartao::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: var(--space-5);
+  right: var(--space-5);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--ouro-filete), transparent);
+  pointer-events: none;
 }
 
 .cartao__titulo {
@@ -306,6 +400,16 @@
   letter-spacing: 0.02em;
   color: var(--text);
   margin-bottom: var(--space-4);
+}
+
+.cartao__titulo-texto {
+  white-space: nowrap;
+}
+
+.cartao__titulo-filete {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--ouro-filete), transparent);
 }
 
 .icone-ouro {
