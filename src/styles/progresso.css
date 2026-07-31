@@ -1,0 +1,503 @@
+/* ─── Progresso de peso — /progresso (ornamentação, ADR-0016 · domínio, ADR-0018) ─
+   Mesmo vocabulário das demais telas amplas (histórico, perfil): frontão +
+   meandro no título, moldura em ouro nos cards de destaque, filete de remate
+   nos cards simples. O gráfico é a peça nova — SVG próprio, sem biblioteca.
+
+   A régua do brand §3.2:
+     AMBIENTE (moldura, filete, meandro, área preenchida sob a linha) →
+       ornamento à vontade, ouro de baixa opacidade.
+     DADOS (peso, datas, métricas) → mono, contraste cheio, nada por cima. O
+       único ouro pleno sobre dado é a linha do gráfico e a métrica "Desde o
+       início" em destaque — ouro de SIGNIFICADO, não de ambiente.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.progresso {
+  --ouro-moldura: rgba(201, 168, 76, 0.22);
+  --ouro-filete: rgba(201, 168, 76, 0.35);
+  --ouro-meandro: 0.20;
+  --sugestao-fundo: rgba(201, 168, 76, 0.08);
+
+  padding-top: var(--space-5);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .progresso {
+    --ouro-moldura: rgba(201, 168, 76, 0.26);
+    --ouro-meandro: 0.26;
+    --sugestao-fundo: rgba(201, 168, 76, 0.10);
+  }
+}
+
+:root[data-theme="dark"] .progresso {
+  --ouro-moldura: rgba(201, 168, 76, 0.26);
+  --ouro-meandro: 0.26;
+  --sugestao-fundo: rgba(201, 168, 76, 0.10);
+}
+
+:root[data-theme="light"] .progresso {
+  --ouro-moldura: rgba(201, 168, 76, 0.22);
+  --ouro-meandro: 0.20;
+  --sugestao-fundo: rgba(201, 168, 76, 0.08);
+}
+
+/* ─── Cabeçalho — frontão + meandro (mesmo padrão de historico.css) ────────── */
+
+.progresso__frontao {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--text);
+}
+
+.progresso__frontao-texto {
+  white-space: nowrap;
+}
+
+.progresso__frontao-filete {
+  flex: 1;
+  height: 1px;
+  min-width: var(--space-3);
+  background: linear-gradient(90deg, transparent, var(--ouro-filete), transparent);
+}
+
+.progresso__frontao-filete--esq {
+  flex: none;
+  width: var(--space-4);
+  background: linear-gradient(90deg, transparent, var(--ouro-filete));
+}
+
+.progresso__meandro {
+  display: block;
+  height: 12px;
+  margin: var(--space-4) 0 var(--space-5);
+  opacity: var(--ouro-meandro);
+  background-repeat: repeat-x;
+  background-size: auto 12px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='16' viewBox='0 0 20 16'%3E%3Cg fill='none' stroke='%23C9A84C' stroke-width='1.5'%3E%3Cpath d='M0 15h20'/%3E%3Cpath d='M4 15V4h12v8H8V8h4'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* ─── Três métricas ─────────────────────────────────────────────────────────
+   Mesma gramática das métricas de perfil.css: número mono, rótulo pequeno
+   abaixo. "Desde o início" ganha ouro pleno — é a métrica de SIGNIFICADO
+   (brand §4.3): quando divergir o bastante, a Sugestão abaixo dela conversa
+   com o mesmo número. */
+
+.progresso__metricas {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3) var(--space-2);
+  margin-bottom: var(--space-5);
+  padding: var(--space-4);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-lg);
+  background: var(--bg-elevated);
+}
+
+.progresso__metrica {
+  min-width: 0;
+  text-align: center;
+}
+
+.progresso__metrica-valor {
+  display: block;
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-size: 19px;
+  line-height: 1.2;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.progresso__metrica-valor.is-destaque {
+  color: var(--accent-text);
+}
+
+.progresso__metrica-rotulo {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+@media (min-width: 768px) {
+  .progresso__metrica-valor {
+    font-size: 24px;
+  }
+}
+
+.progresso__convite-serie {
+  margin: 0 0 var(--space-5);
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ─── Estado vazio (mesma peça de historico__vazio / perfil__vazio) ────────── */
+
+.progresso__vazio {
+  margin-bottom: var(--space-5);
+  padding: var(--space-6) var(--space-5);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-lg);
+  background: var(--bg-elevated);
+}
+
+.progresso__vazio-titulo {
+  margin-bottom: var(--space-2);
+  color: var(--text);
+}
+
+.progresso__vazio-texto {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ─── Gráfico ─────────────────────────────────────────────────────────────── */
+
+.progresso__grafico-card {
+  margin-bottom: var(--space-5);
+  padding: var(--space-4) var(--space-4) var(--space-3);
+  border: 1px solid var(--ouro-moldura);
+  border-radius: var(--radius-lg);
+  background: var(--bg-elevated);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .progresso__grafico-card {
+    animation: progresso-entrada var(--duration-slow) var(--ease);
+  }
+}
+
+@keyframes progresso-entrada {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Proporção FIXA, idêntica ao viewBox do SVG (GRAFICO_LARGURA/GRAFICO_ALTURA
+   em ProgressoPage.tsx) — os alvos de toque e o tooltip são posicionados por
+   PORCENTAGEM deste wrapper, então ele precisa preencher exatamente o mesmo
+   retângulo que o SVG desenha (sem letterbox), ou os dois desalinham. */
+.progresso__grafico-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 600 / 220;
+}
+
+.progresso__grafico-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.progresso__eixo-y {
+  position: absolute;
+  left: 0;
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.progresso__eixo-y--topo {
+  top: 0;
+}
+
+.progresso__eixo-y--base {
+  bottom: 0;
+}
+
+/* Alvo de toque: 44px mínimo (brand §9), centralizado no ponto — maior que o
+   círculo visual (~3px) desenhado no SVG por baixo. Invisível de propósito:
+   é só a área que o dedo precisa acertar. */
+.progresso__ponto-alvo {
+  position: absolute;
+  width: var(--touch-target-min);
+  height: var(--touch-target-min);
+  transform: translate(-50%, -50%);
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.progresso__ponto-alvo:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 999px;
+}
+
+.progresso__tooltip {
+  position: absolute;
+  transform: translate(-50%, calc(-100% - 10px));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--ouro-filete);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .progresso__tooltip {
+    animation: progresso-tooltip var(--duration-fast) var(--ease);
+  }
+}
+
+@keyframes progresso-tooltip {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.progresso__tooltip-data {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.progresso__tooltip-peso {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.progresso__eixo-x {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--space-2);
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* ─── Sugestão de novo Plano — bloco dourado não-intrusivo ─────────────────── */
+
+.progresso__sugestao {
+  margin-bottom: var(--space-5);
+  padding: var(--space-4);
+  border: 1px solid var(--ouro-moldura);
+  border-radius: var(--radius-lg);
+  background: var(--sugestao-fundo);
+}
+
+.progresso__sugestao-texto {
+  margin: 0 0 var(--space-3);
+  font-size: 14px;
+  color: var(--text);
+}
+
+.progresso__sugestao-cta {
+  display: inline-flex;
+  min-height: var(--touch-target-min);
+  align-items: center;
+  padding: var(--space-2) var(--space-4);
+  background: var(--accent);
+  color: var(--on-accent);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-weight: var(--font-weight-emphasis);
+  font-size: 14px;
+  cursor: pointer;
+  transition: opacity var(--duration-fast) ease;
+}
+
+.progresso__sugestao-cta:hover {
+  opacity: 0.9;
+}
+
+.progresso__sugestao-cta:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ─── Registrar peso — card com filete de remate (mesma peça de perfil__card) */
+
+.progresso__registrar {
+  position: relative;
+  margin-bottom: var(--space-5);
+  padding: var(--space-5);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-lg);
+  background: var(--bg-elevated);
+}
+
+.progresso__registrar::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: var(--space-5);
+  right: var(--space-5);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--ouro-filete), transparent);
+  pointer-events: none;
+}
+
+.progresso__registrar-titulo {
+  margin: 0 0 var(--space-1);
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--text);
+}
+
+.progresso__registrar-convite {
+  margin: 0 0 var(--space-4);
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.progresso__registrar-linha {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.progresso__registrar-input {
+  flex: 1;
+  min-width: 0;
+  min-height: var(--touch-target-min);
+  padding: var(--space-3);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-size: 16px;
+}
+
+.progresso__registrar-input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.progresso__registrar-cta {
+  flex: none;
+  min-height: var(--touch-target-min);
+  padding: var(--space-3) var(--space-4);
+  background: var(--accent);
+  color: var(--on-accent);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-weight: var(--font-weight-emphasis);
+  font-size: 15px;
+  cursor: pointer;
+  transition: opacity var(--duration-fast) ease;
+}
+
+.progresso__registrar-cta:hover {
+  opacity: 0.9;
+}
+
+.progresso__registrar-cta:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.progresso__registrar-cta:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.progresso__registrar-erro {
+  margin-top: var(--space-2);
+  font-size: 13px;
+  color: var(--feedback-erro);
+}
+
+/* ─── Últimos — lista editável, sem opção de apagar (ADR-0018) ─────────────── */
+
+.progresso__ultimos-titulo {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--text);
+}
+
+.progresso__ultimos-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+}
+
+.progresso__ultimo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--border-hairline);
+  flex-wrap: wrap;
+}
+
+.progresso__ultimo-data {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.progresso__ultimo-peso {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.progresso__ultimo-input {
+  flex: 1;
+  min-width: 80px;
+  min-height: var(--touch-target-min);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-size: 15px;
+}
+
+.progresso__ultimo-acao {
+  min-height: var(--touch-target-min);
+  padding: var(--space-2) var(--space-3);
+  background: transparent;
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background var(--duration-fast) ease, border-color var(--duration-fast) ease;
+}
+
+.progresso__ultimo-acao:hover {
+  background: var(--bg);
+  border-color: var(--ouro-moldura);
+}
+
+.progresso__ultimo-acao:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.progresso__ultimo-acao--secundaria {
+  color: var(--text-muted);
+}

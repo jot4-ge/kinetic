@@ -12,6 +12,7 @@ import { PerfilPage } from "@/features/perfil/PerfilPage"
 import { HistoricoPage } from "@/features/historico/HistoricoPage"
 import { PlanoRegistrosPage } from "@/features/historico/PlanoRegistrosPage"
 import { CalendarioPage } from "@/features/calendario/CalendarioPage"
+import { ProgressoPage } from "@/features/progresso/ProgressoPage"
 
 // Ícones do header — traço fino, herdam currentColor (cor de texto, nunca ouro).
 function IconePerfil() {
@@ -41,6 +42,7 @@ function IconeVoltar() {
 //   /historico/:plano  → /historico
 //   /calendario        → /hoje     (entrada mora no ícone de calendário do dia)
 //   /dia/:data         → /calendario
+//   /progresso         → /perfil   (entrada mora no card "Progresso de peso" do Perfil)
 // Telas "pré-app" (raiz, onboarding) não têm ação secundária.
 function AcaoHeader() {
   const { pathname } = useLocation()
@@ -60,6 +62,7 @@ function AcaoHeader() {
   else if (pathname.startsWith("/historico/")) voltarPara = "/historico"
   else if (pathname === "/calendario") voltarPara = "/hoje"
   else if (pathname.startsWith("/dia/")) voltarPara = "/calendario"
+  else if (pathname === "/progresso") voltarPara = "/perfil"
 
   if (voltarPara) {
     return (
@@ -74,13 +77,15 @@ function AcaoHeader() {
 function Shell({ children }: { children: React.ReactNode }) {
   // Telas de duas colunas no desktop (main + aside) abrem a largura; as demais
   // rotas seguem estreitas: /hoje e /dia/:data (registro + água/treino),
-  // /calendario (grade + painel do mês) e /historico (eras + painel da jornada).
+  // /calendario (grade + painel do mês), /historico (eras + painel da jornada)
+  // e /progresso (métricas + gráfico, mais larga no desktop).
   const { pathname } = useLocation()
   const ampla =
     pathname === "/hoje" ||
     pathname === "/calendario" ||
     pathname.startsWith("/dia/") ||
-    pathname.startsWith("/historico")
+    pathname.startsWith("/historico") ||
+    pathname === "/progresso"
   return (
     <div className={ampla ? "app-shell app-shell--ampla" : "app-shell"}>
       <div className="app-header-meandro" aria-hidden="true" />
@@ -108,6 +113,7 @@ function App() {
         <Route path="/perfil" element={<PerfilPage />} />
         <Route path="/historico" element={<HistoricoPage />} />
         <Route path="/historico/:planoId" element={<PlanoRegistrosPage />} />
+        <Route path="/progresso" element={<ProgressoPage />} />
       </Routes>
     </Shell>
   )

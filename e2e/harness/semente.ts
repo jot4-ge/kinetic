@@ -11,10 +11,10 @@
 import { construirUsuarioEPlano, ID_USUARIO_LOCAL } from "@/features/onboarding/onboarding-core"
 import type { EntradaCalculo } from "@/motor-geracao"
 import { resolverPerfilDia } from "@/motor-geracao/selecao-refeicoes"
-import { diaDaSemanaDeISO } from "@/utils/data"
+import { diaDaSemanaDeISO, formatarISODate } from "@/utils/data"
 import type {
-  Usuario, Plano, PlanoAtivo, RegistroDeAderencia,
-  RegistroDeRefeicao, ISODate, ISOTimestamp, PlanoId, RegistroId,
+  Usuario, Plano, PlanoAtivo, RegistroDeAderencia, RegistroDePeso,
+  RegistroDeRefeicao, ISODate, ISOTimestamp, PlanoId, RegistroId, RegistroPesoId,
 } from "@/types"
 import type { DadosSemente } from "./adapter-memoria"
 
@@ -132,6 +132,44 @@ function diasCorridos(
   return dias
 }
 
+// ─── Pesos (verificação visual da fase 2b — /progresso) ────────────────────
+// Ao contrário do resto da fixture (datado a partir do HOJE fixo acima, para
+// capturas reproduzíveis), os pesos usam o dia REAL do momento em que o
+// harness carrega: ProgressoPage decide "hoje" via `new Date()` de verdade
+// (é o dia em que o Registrar upserta), então um peso "de hoje" só prefills o
+// input e cai fora da lista Últimos se a data bater com o relógio real.
+
+export type CenarioPesos = "vazio" | "unico" | "serie"
+
+function pesoRegistro(data: ISODate, peso_kg: number, id: string): RegistroDePeso {
+  return {
+    id: id as RegistroPesoId,
+    usuario_id: ID_USUARIO_LOCAL,
+    data,
+    peso_kg,
+    criado_em: `${data}T08:00:00.000Z` as ISOTimestamp,
+    editado_em: null,
+  }
+}
+
+function montarPesos(cenario: CenarioPesos | undefined): RegistroDePeso[] {
+  const hojeReal = formatarISODate(new Date())
+
+  if (cenario === "unico") {
+    return [pesoRegistro(hojeReal, 79.4, "fixture-peso-hoje")]
+  }
+
+  if (cenario === "serie") {
+    const offsets = [-24, -18, -13, -9, -6, -3, -1, 0]
+    const pesos = [82.6, 81.9, 81.2, 80.5, 80.1, 79.8, 79.6, 79.4]
+    return offsets.map((offset, i) =>
+      pesoRegistro(somarDias(hojeReal, offset), pesos[i], `fixture-peso-${i}`),
+    )
+  }
+
+  return [] // "vazio" (ou omitido): nenhum peso registrado
+}
+
 // ─── A jornada ──────────────────────────────────────────────────────────────
 // Três eras, do começo ao presente. Objetivos diferentes para os cards não
 // serem cópias, e comprimentos diferentes para a timeline ter ritmo.
@@ -153,7 +191,7 @@ const entradaBulk: EntradaCalculo = {
   fator_atividade: "MuitoAtivo", objetivo: "Bulk",
 }
 
-export function montarSemente(): DadosSemente {
+export function montarSemente(cenarioPesos?: CenarioPesos): DadosSemente {
   const plano1 = arquivar(gerarPlanoAtivo(entradaCutting, "fixture-plano-1", ERA_1_INICIO), ERA_2_INICIO)
   const plano2 = arquivar(gerarPlanoAtivo(entradaRecomposicao, "fixture-plano-2", ERA_2_INICIO), ERA_3_INICIO)
   const plano3 = gerarPlanoAtivo(entradaBulk, "fixture-plano-3", ERA_3_INICIO)
@@ -186,7 +224,7 @@ export function montarSemente(): DadosSemente {
     criado_em: `${ERA_1_INICIO}T12:00:00.000Z` as ISOTimestamp,
   }
 
-  return { usuario, planos: [plano1, plano2, plano3], registros }
+  return { usuario, planos: [plano1, plano2, plano3], registros, pesos: montarPesos(cenarioPesos) }
 }
 
 // Ids estáveis, para o teste navegar direto a uma era sem depender de clique.
