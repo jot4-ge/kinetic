@@ -1,8 +1,8 @@
 // Perfil — "página de identidade" do Usuário (refino ADR-0016). De cima para
 // baixo: bloco de identidade (objetivo + medalhão + métricas do Plano Ativo,
-// só LEITURA do que já está persistido), placeholder da Fase 2 (Progresso de
-// peso) e o card de Plano (Gerar novo plano / Ver histórico) já existente —
-// mesma copy e comportamento, só a aparência muda.
+// só LEITURA do que já está persistido), card "Progresso de peso" (entrada
+// para /progresso, fase 2b) e o card de Plano (Gerar novo plano / Ver
+// histórico) já existente — mesma copy e comportamento, só a aparência muda.
 
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
@@ -11,7 +11,6 @@ import { EstadoVazio } from "@/components/EstadoVazio"
 import { formatarISODate } from "@/utils/data"
 import { ID_USUARIO_LOCAL } from "@/features/onboarding/onboarding-core"
 import { OBJETIVO_LABEL, formatarDesde } from "./perfil-core"
-import { ProgressoPesoPlaceholder } from "./ProgressoPesoPlaceholder"
 import type { Usuario, PlanoAtivo } from "@/types"
 import cabecaUrl from "@/assets/escultura-cabeca.webp"
 
@@ -107,7 +106,19 @@ export function PerfilPage() {
         </div>
       )}
 
-      <ProgressoPesoPlaceholder />
+      <section className="perfil__card">
+        <h2 className="perfil__card-titulo">Progresso de peso</h2>
+        <p className="perfil__card-texto">
+          Registre seu peso e acompanhe a evolução frente à base do seu Plano.
+        </p>
+        <button
+          type="button"
+          className="perfil__cta-secundaria"
+          onClick={() => navigate("/progresso")}
+        >
+          Ver progresso
+        </button>
+      </section>
 
       <section className="perfil__card">
         <h2 className="perfil__card-titulo">Plano</h2>

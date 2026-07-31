@@ -20,13 +20,18 @@ import "@/styles/calendario.css"
 import "@/styles/historico.css"
 import "@/styles/tela-hoje.css"
 import "@/styles/perfil.css"
+import "@/styles/progresso.css"
 import { PersistenciaProvider } from "@/providers/persistencia"
 import App from "@/App"
 import { criarAdapterMemoria } from "./adapter-memoria"
-import { montarSemente } from "./semente"
+import { montarSemente, type CenarioPesos } from "./semente"
 
-const rota = new URLSearchParams(location.search).get("rota") ?? "/historico"
-const persistencia = criarAdapterMemoria(montarSemente())
+const params = new URLSearchParams(location.search)
+const rota = params.get("rota") ?? "/historico"
+// ?pesos=vazio|unico|serie — só usado por /progresso (verificação visual da
+// fase 2b); omitido, o resto da fixture não muda (equivale a "vazio").
+const cenarioPesos = (params.get("pesos") ?? undefined) as CenarioPesos | undefined
+const persistencia = criarAdapterMemoria(montarSemente(cenarioPesos))
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

@@ -120,3 +120,22 @@ uma mudança isolada por desenho.
 > verdade. O harness não serve a isso (vive só no ambiente de teste), e é para
 > esse caso que as três direções acima continuam abertas — com a terceira ainda
 > sendo a mais promissora, pelo mesmo motivo.
+
+---
+
+## Dívida: `hoje-visual.spec.ts` depende do dia da semana real
+
+Achado ao verificar visualmente a fase de Progresso de peso (tela `/progresso`):
+`e2e/hoje-visual.spec.ts` espera `locator('.refeicao')` com exatamente 6
+elementos, mas esse número depende de qual Perfil de Dia (CEDO/TERCA/SEXTA/
+FIM_DE_SEMANA) `resolverPerfilDia` escolhe — e a escolha usa o dia da semana
+**real** (`new Date()` do relógio da máquina que roda o teste), não uma data
+fixa da fixture. Em dias cujo Perfil tem uma contagem diferente de refeições
+(ex: SEXTA), o teste falha — reproduz igual no código-base sem qualquer mudança,
+então não é regressão de nenhuma fase, é fragilidade preexistente do teste.
+
+Candidato: tornar o teste determinístico mockando a data (ex: `page.clock` do
+Playwright, ou `page.addInitScript` sobrescrevendo `Date`) para fixar "hoje" a
+um dia da semana conhecido, do mesmo jeito que `e2e/harness/semente.ts` fixa
+`HOJE` para o resto da fixture. Não é desta fase — só registrado para não
+esquecer.
