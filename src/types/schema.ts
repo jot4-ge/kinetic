@@ -8,7 +8,7 @@
 
 import { z } from "zod"
 import type {
-  UsuarioId, PlanoId, ExercicioId, RegistroId,
+  UsuarioId, PlanoId, ExercicioId, RegistroId, RegistroPesoId,
   ISODate, ISOTimestamp,
   GrupoMuscular, DiaDaSemana, ObjetivoDePlano, FatorAtividade,
   Exercicio, Macros, OpcaoDeRefeicao, Refeicao, PerfilDeRefeicao,
@@ -16,14 +16,16 @@ import type {
   PeriodoDeVigencia, PlanoAtivo, PlanoArquivado, Plano,
   Usuario,
   RegistroDeRefeicao, RegistroDeExercicio, RegistroDeAderencia,
+  RegistroDePeso,
 } from "./domain"
 
 // ─── Brand helpers ────────────────────────────────────────────────────────────
 
-const usuarioId   = z.string().min(1).transform(s => s as UsuarioId)
-const planoId     = z.string().min(1).transform(s => s as PlanoId)
-const exercicioId = z.string().min(1).transform(s => s as ExercicioId)
-const registroId  = z.string().min(1).transform(s => s as RegistroId)
+const usuarioId      = z.string().min(1).transform(s => s as UsuarioId)
+const planoId        = z.string().min(1).transform(s => s as PlanoId)
+const exercicioId    = z.string().min(1).transform(s => s as ExercicioId)
+const registroId     = z.string().min(1).transform(s => s as RegistroId)
+const registroPesoId = z.string().min(1).transform(s => s as RegistroPesoId)
 const isoDate     = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "ISODate must be YYYY-MM-DD")
                     .transform(s => s as ISODate)
 const isoTimestamp = z.string().datetime({ offset: true })
@@ -228,6 +230,17 @@ export const registroDeAderenciaSchema = z.object({
   registros_exercicio: z.array(registroDeExercicioSchema),
 }) satisfies z.ZodType<RegistroDeAderencia>
 
+// ─── RegistroDePeso ─────────────────────────────────────────────────────────
+
+export const registroDePesoSchema = z.object({
+  id: registroPesoId,
+  usuario_id: usuarioId,
+  data: isoDate,
+  peso_kg: z.number().positive(),
+  criado_em: isoTimestamp,
+  editado_em: isoTimestamp.nullable(),
+}) satisfies z.ZodType<RegistroDePeso>
+
 // ─── Parse functions (primary interface for src/persistencia/) ────────────────
 // Each function takes `unknown` and returns a typed value, throwing ZodError
 // on invalid data. Callers do not need to import Zod directly.
@@ -246,4 +259,8 @@ export function parseExercicio(raw: unknown): Exercicio {
 
 export function parseRegistroDeAderencia(raw: unknown): RegistroDeAderencia {
   return registroDeAderenciaSchema.parse(raw)
+}
+
+export function parseRegistroDePeso(raw: unknown): RegistroDePeso {
+  return registroDePesoSchema.parse(raw)
 }

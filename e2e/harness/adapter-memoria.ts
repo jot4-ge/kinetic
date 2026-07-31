@@ -11,7 +11,7 @@
 
 import type { CamadaDePersistencia } from "@/persistencia"
 import type {
-  Usuario, Plano, PlanoAtivo, Exercicio, RegistroDeAderencia,
+  Usuario, Plano, PlanoAtivo, Exercicio, RegistroDeAderencia, RegistroDePeso,
   UsuarioId, PlanoId, ExercicioId, RegistroId, ISODate,
 } from "@/types"
 
@@ -20,6 +20,7 @@ export interface DadosSemente {
   readonly planos: readonly Plano[]
   readonly registros: readonly RegistroDeAderencia[]
   readonly exercicios?: readonly Exercicio[]
+  readonly pesos?: readonly RegistroDePeso[]
 }
 
 export function criarAdapterMemoria(semente: DadosSemente): CamadaDePersistencia {
@@ -30,6 +31,9 @@ export function criarAdapterMemoria(semente: DadosSemente): CamadaDePersistencia
   )
   const registros = new Map<string, RegistroDeAderencia>(
     semente.registros.map((r) => [r.id, r]),
+  )
+  const pesos = new Map<string, RegistroDePeso>(
+    (semente.pesos ?? []).map((p) => [p.id, p]),
   )
 
   return {
@@ -85,6 +89,41 @@ export function criarAdapterMemoria(semente: DadosSemente): CamadaDePersistencia
       },
       async listarPorPlano(planoId: PlanoId) {
         return [...registros.values()].filter((r) => r.plano_id === planoId)
+      },
+    },
+
+    pesos: {
+      // Mesma garantia estrutural do IdbAdapter (ADR-0018): upsert-por-data
+      // aqui dentro, reaproveitando id/criado_em do registro existente.
+      async salvar(registro: RegistroDePeso) {
+        const existente = [...pesos.values()].find(
+          (p) => p.usuario_id === registro.usuario_id && p.data === registro.data,
+        )
+        if (existente) {
+          pesos.set(existente.id, {
+            ...existente,
+            peso_kg: registro.peso_kg,
+            editado_em: registro.editado_em,
+          })
+        } else {
+          pesos.set(registro.id, registro)
+        }
+      },
+      async buscarPorData(usuarioId: UsuarioId, data: ISODate) {
+        return [...pesos.values()].find(
+          (p) => p.usuario_id === usuarioId && p.data === data,
+        ) ?? null
+      },
+      async listarPorPeriodo(usuarioId: UsuarioId, de: ISODate, ate: ISODate) {
+        return [...pesos.values()].filter(
+          (p) => p.usuario_id === usuarioId && p.data >= de && p.data <= ate,
+        )
+      },
+      async buscarMaisRecente(usuarioId: UsuarioId) {
+        const doUsuario = [...pesos.values()]
+          .filter((p) => p.usuario_id === usuarioId)
+          .sort((a, b) => a.data.localeCompare(b.data))
+        return doUsuario.length === 0 ? null : doUsuario[doUsuario.length - 1]
       },
     },
   }

@@ -1,18 +1,20 @@
 // ─── IDB Store name constants ─────────────────────────────────────────────────
 // Import from here in src/persistencia/ — never use raw strings.
 
-export const STORE_USUARIOS   = "usuarios"            as const
-export const STORE_PLANOS     = "planos"              as const
-export const STORE_EXERCICIOS = "exercicios"          as const
-export const STORE_REGISTROS  = "registros_aderencia" as const
+export const STORE_USUARIOS       = "usuarios"            as const
+export const STORE_PLANOS         = "planos"              as const
+export const STORE_EXERCICIOS     = "exercicios"          as const
+export const STORE_REGISTROS      = "registros_aderencia" as const
+export const STORE_REGISTROS_PESO = "registros_peso"      as const
 
 // ─── Branded IDs (only for fields that cross IDB store boundaries) ────────────
 // Internal IDs (slugs unique within a parent record) stay as plain string.
 
-export type UsuarioId   = string & { readonly _brand: "UsuarioId" }
-export type PlanoId     = string & { readonly _brand: "PlanoId" }
-export type ExercicioId = string & { readonly _brand: "ExercicioId" }
-export type RegistroId  = string & { readonly _brand: "RegistroId" }
+export type UsuarioId      = string & { readonly _brand: "UsuarioId" }
+export type PlanoId        = string & { readonly _brand: "PlanoId" }
+export type ExercicioId    = string & { readonly _brand: "ExercicioId" }
+export type RegistroId     = string & { readonly _brand: "RegistroId" }
+export type RegistroPesoId = string & { readonly _brand: "RegistroPesoId" }
 
 // Temporal brands: prevent passing a full timestamp where only a date is expected.
 export type ISODate      = string & { readonly _brand: "ISODate" }       // "YYYY-MM-DD"
@@ -284,4 +286,19 @@ export interface RegistroDeAderencia {
   // Keys = ChecklistItemTemplate.id; render order from Plano.checklist_template
   readonly checklist: Readonly<Record<string, boolean>>
   readonly registros_exercicio: readonly RegistroDeExercicio[]
+}
+
+// ─── RegistroDePeso — top-level IDB store (STORE_REGISTROS_PESO) ──────────────
+// ADR-0018: no máximo um por dia (garantido pelo repositório, não pelo chamador),
+// editável (editado_em, padrão ADR-0008) mas sem operação de delete — a série
+// temporal de peso não é apagável.
+
+export interface RegistroDePeso {
+  readonly id: RegistroPesoId
+  readonly usuario_id: UsuarioId
+
+  readonly data: ISODate                    // imutável — define o dia (ADR-0008)
+  readonly peso_kg: number
+  readonly criado_em: ISOTimestamp
+  readonly editado_em: ISOTimestamp | null  // null até a primeira edição
 }

@@ -10,6 +10,7 @@ export type {
   PlanoRepositorio,
   ExercicioRepositorio,
   RegistroRepositorio,
+  PesoRepositorio,
 } from "./contratos"
 
 export { openDb, DB_NAME, DB_VERSION } from "./idb/db"

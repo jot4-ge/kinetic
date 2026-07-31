@@ -8,9 +8,9 @@ import { openDb } from "./db"
 import { createIdbAdapter } from "./adapter"
 import type { CamadaDePersistencia } from "../contratos"
 import type {
-  UsuarioId, PlanoId, RegistroId,
+  UsuarioId, PlanoId, RegistroId, RegistroPesoId,
   ISODate, ISOTimestamp,
-  PlanoAtivo, PlanoArquivado, Usuario, RegistroDeAderencia,
+  PlanoAtivo, PlanoArquivado, Usuario, RegistroDeAderencia, RegistroDePeso,
 } from "@/types"
 import { BANCO_EXERCICIOS } from "@/banco-opcoes"
 import { gerarPlano } from "@/motor-geracao"
@@ -430,6 +430,131 @@ describe("RegistroRepositorio", () => {
     await adapter.registros.salvar(r)
     const lido = await adapter.registros.buscar("r-completo" as RegistroId)
     expect(lido).toEqual(r)
+  })
+})
+
+// ─── PesoRepositorio — upsert-por-data como garantia estrutural (ADR-0018) ────
+
+describe("PesoRepositorio", () => {
+  let adapter: CamadaDePersistencia
+
+  function makePeso(data: ISODate, peso_kg: number, id: string): RegistroDePeso {
+    return {
+      id: id as RegistroPesoId,
+      usuario_id: uid,
+      data,
+      peso_kg,
+      criado_em: ts,
+      editado_em: null,
+    }
+  }
+
+  beforeEach(async () => { adapter = await freshAdapter() })
+
+  // ── A invariante central: salvar duas vezes no mesmo dia nunca duplica ────
+
+  it("salvar duas vezes na mesma data resulta em UM registro (upsert, não dois)", async () => {
+    await adapter.pesos.salvar(makePeso("2026-07-01" as ISODate, 80, "peso-a"))
+    await adapter.pesos.salvar(makePeso("2026-07-01" as ISODate, 81, "peso-b"))
+
+    const periodo = await adapter.pesos.listarPorPeriodo(
+      uid, "2026-07-01" as ISODate, "2026-07-01" as ISODate,
+    )
+    expect(periodo).toHaveLength(1)
+    expect(periodo[0].peso_kg).toBe(81) // o segundo salvar venceu
+
+    const encontrado = await adapter.pesos.buscarPorData(uid, "2026-07-01" as ISODate)
+    expect(encontrado?.peso_kg).toBe(81)
+  })
+
+  it("upsert reaproveita id e criado_em do registro existente, não o do novo objeto", async () => {
+    await adapter.pesos.salvar(makePeso("2026-07-01" as ISODate, 80, "peso-original"))
+    await adapter.pesos.salvar(makePeso("2026-07-01" as ISODate, 82, "peso-novo-id"))
+
+    const encontrado = await adapter.pesos.buscarPorData(uid, "2026-07-01" as ISODate)
+    expect(encontrado?.id).toBe("peso-original") // id do novo objeto foi descartado
+    expect(encontrado?.criado_em).toBe(ts)
+    expect(encontrado?.peso_kg).toBe(82)
+  })
+
+  it("upsert adota o editado_em do registro recebido na segunda gravação", async () => {
+    await adapter.pesos.salvar(makePeso("2026-07-01" as ISODate, 80, "peso-a"))
+    const editado_em = "2026-07-02T10:00:00.000Z" as ISOTimestamp
+    await adapter.pesos.salvar({
+      ...makePeso("2026-07-01" as ISODate, 83, "peso-b"),
+      editado_em,
+    })
+
+    const encontrado = await adapter.pesos.buscarPorData(uid, "2026-07-01" as ISODate)
+    expect(encontrado?.editado_em).toBe(editado_em)
+  })
+
+  it("datas diferentes não colidem: cada dia mantém seu próprio registro", async () => {
+    await adapter.pesos.salvar(makePeso("2026-07-01" as ISODate, 80, "peso-dia1"))
+    await adapter.pesos.salvar(makePeso("2026-07-02" as ISODate, 79, "peso-dia2"))
+
+    const periodo = await adapter.pesos.listarPorPeriodo(
+      uid, "2026-07-01" as ISODate, "2026-07-02" as ISODate,
+    )
+    expect(periodo).toHaveLength(2)
+  })
+
+  it("não confunde usuários diferentes na mesma data", async () => {
+    await adapter.pesos.salvar(makePeso("2026-07-01" as ISODate, 80, "peso-u1"))
+    await adapter.pesos.salvar({
+      ...makePeso("2026-07-01" as ISODate, 70, "peso-u2"),
+      usuario_id: uid2,
+    })
+
+    expect((await adapter.pesos.buscarPorData(uid, "2026-07-01" as ISODate))?.peso_kg).toBe(80)
+    expect((await adapter.pesos.buscarPorData(uid2, "2026-07-01" as ISODate))?.peso_kg).toBe(70)
+  })
+
+  // ── buscarPorData / listarPorPeriodo ───────────────────────────────────────
+
+  it("buscarPorData retorna null para data sem registro", async () => {
+    await adapter.pesos.salvar(makePeso("2026-07-01" as ISODate, 80, "peso-a"))
+    expect(await adapter.pesos.buscarPorData(uid, "2026-07-02" as ISODate)).toBeNull()
+  })
+
+  it("listarPorPeriodo inclui os limites do intervalo e exclui fora dele", async () => {
+    await adapter.pesos.salvar(makePeso("2026-06-30" as ISODate, 81, "fora-antes"))
+    await adapter.pesos.salvar(makePeso("2026-07-01" as ISODate, 80, "limite-inf"))
+    await adapter.pesos.salvar(makePeso("2026-07-10" as ISODate, 78, "limite-sup"))
+    await adapter.pesos.salvar(makePeso("2026-07-11" as ISODate, 77, "fora-depois"))
+
+    const periodo = await adapter.pesos.listarPorPeriodo(
+      uid, "2026-07-01" as ISODate, "2026-07-10" as ISODate,
+    )
+    const ids = periodo.map((p) => p.id)
+    expect(ids).toEqual(["limite-inf", "limite-sup"])
+  })
+
+  // ── buscarMaisRecente ───────────────────────────────────────────────────────
+
+  it("buscarMaisRecente retorna null quando não há nenhum peso", async () => {
+    expect(await adapter.pesos.buscarMaisRecente(uid)).toBeNull()
+  })
+
+  it("buscarMaisRecente retorna o de data mais alta, independente da ordem de gravação", async () => {
+    await adapter.pesos.salvar(makePeso("2026-07-05" as ISODate, 80, "meio"))
+    await adapter.pesos.salvar(makePeso("2026-07-01" as ISODate, 82, "primeiro"))
+    await adapter.pesos.salvar(makePeso("2026-07-10" as ISODate, 78, "ultimo"))
+
+    expect((await adapter.pesos.buscarMaisRecente(uid))?.id).toBe("ultimo")
+  })
+
+  // ── Ausência de delete ──────────────────────────────────────────────────────
+  // RegistroDePeso é editável mas não deletável (ADR-0018): a garantia é
+  // ESTRUTURAL — não existe operação de delete no contrato, então não há
+  // método a chamar por engano. Este teste documenta a superfície do
+  // repositório em runtime (o compilador já barra `.delete` no build).
+
+  it("PesoRepositorio não expõe nenhuma operação de exclusão", async () => {
+    const chaves = Object.keys(adapter.pesos)
+    expect(chaves).toEqual(["salvar", "buscarPorData", "listarPorPeriodo", "buscarMaisRecente"])
+    expect((adapter.pesos as unknown as Record<string, unknown>).deletar).toBeUndefined()
+    expect((adapter.pesos as unknown as Record<string, unknown>).delete).toBeUndefined()
   })
 })
 

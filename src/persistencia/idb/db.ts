@@ -1,9 +1,9 @@
 import { openDB, type IDBPDatabase, type DBSchema } from "idb"
-import type { Usuario, Plano, Exercicio, RegistroDeAderencia } from "@/types"
+import type { Usuario, Plano, Exercicio, RegistroDeAderencia, RegistroDePeso } from "@/types"
 import { BANCO_EXERCICIOS } from "@/banco-opcoes"
 
 export const DB_NAME    = "rotina-sync"
-export const DB_VERSION = 1
+export const DB_VERSION = 2
 
 interface RotinaDB extends DBSchema {
   usuarios: {
@@ -30,6 +30,13 @@ interface RotinaDB extends DBSchema {
       por_plano_e_data:   [string, string]
     }
   }
+  registros_peso: {
+    key: string
+    value: RegistroDePeso
+    indexes: {
+      por_usuario_e_data: [string, string]
+    }
+  }
 }
 
 export type RotinaIDB = IDBPDatabase<RotinaDB>
@@ -47,23 +54,35 @@ async function seedIfNeeded(db: RotinaIDB): Promise<void> {
 
 export async function openDb(name = DB_NAME): Promise<RotinaIDB> {
   const db = await openDB<RotinaDB>(name, DB_VERSION, {
-    upgrade(db) {
-      db.createObjectStore("usuarios", { keyPath: "id" })
+    // oldVersion guarda cada bloco: um banco existente na v1 só roda o bloco da
+    // v2 (evita recriar stores já existentes, o que lançaria erro no IDB).
+    upgrade(db, oldVersion) {
+      if (oldVersion < 1) {
+        db.createObjectStore("usuarios", { keyPath: "id" })
 
-      const planos = db.createObjectStore("planos", { keyPath: "id" })
-      // por_usuario: lista de planos de um usuário (listarPorUsuario)
-      planos.createIndex("por_usuario", "usuario_id", { unique: false })
-      // por_usuario_e_status: acesso O(log n) ao PlanoAtivo sem scan (ADR-0002)
-      // keyPath usa dot-notation IDB para acessar a propriedade aninhada vigencia.status
-      planos.createIndex("por_usuario_e_status", ["usuario_id", "vigencia.status"], { unique: false })
+        const planos = db.createObjectStore("planos", { keyPath: "id" })
+        // por_usuario: lista de planos de um usuário (listarPorUsuario)
+        planos.createIndex("por_usuario", "usuario_id", { unique: false })
+        // por_usuario_e_status: acesso O(log n) ao PlanoAtivo sem scan (ADR-0002)
+        // keyPath usa dot-notation IDB para acessar a propriedade aninhada vigencia.status
+        planos.createIndex("por_usuario_e_status", ["usuario_id", "vigencia.status"], { unique: false })
 
-      db.createObjectStore("exercicios", { keyPath: "id" })
+        db.createObjectStore("exercicios", { keyPath: "id" })
 
-      const registros = db.createObjectStore("registros_aderencia", { keyPath: "id" })
-      // Compound [usuario_id, data]: buscarPorData (ponto) e listarPorPeriodo (range)
-      registros.createIndex("por_usuario_e_data", ["usuario_id", "data"], { unique: false })
-      // Compound [plano_id, data]: listarPorPlano com resultado ordenado por data
-      registros.createIndex("por_plano_e_data", ["plano_id", "data"], { unique: false })
+        const registros = db.createObjectStore("registros_aderencia", { keyPath: "id" })
+        // Compound [usuario_id, data]: buscarPorData (ponto) e listarPorPeriodo (range)
+        registros.createIndex("por_usuario_e_data", ["usuario_id", "data"], { unique: false })
+        // Compound [plano_id, data]: listarPorPlano com resultado ordenado por data
+        registros.createIndex("por_plano_e_data", ["plano_id", "data"], { unique: false })
+      }
+
+      if (oldVersion < 2) {
+        const pesos = db.createObjectStore("registros_peso", { keyPath: "id" })
+        // Compound [usuario_id, data]: mesmo papel do índice em registros_aderencia —
+        // buscarPorData (ponto), listarPorPeriodo (range) e o upsert em PesoRepositorio.salvar
+        // (ADR-0018) leem por este índice dentro da mesma transação de escrita.
+        pesos.createIndex("por_usuario_e_data", ["usuario_id", "data"], { unique: false })
+      }
     },
   })
   await seedIfNeeded(db)
