@@ -123,7 +123,8 @@ function Cartao({ titulo, icone, children }: { titulo: string; icone: ReactNode;
     <section className="cartao">
       <h2 className="cartao__titulo">
         <span className="icone-ouro">{icone}</span>
-        {titulo}
+        <span className="cartao__titulo-texto">{titulo}</span>
+        <span className="cartao__titulo-filete" aria-hidden="true" />
       </h2>
       {children}
     </section>
@@ -220,9 +221,12 @@ export function RegistroDoDia({
   return (
     <div className="hoje">
       <header className="hoje__cabecalho">
-        <div>
+        <div className="hoje__titulo-bloco">
           <p className="hoje__data">{ehHoje ? "Hoje" : formatarDataCurta(data)}</p>
-          <h1 className="hoje__titulo">{DIA_LABEL[dia]}</h1>
+          <div className="hoje__titulo-linha">
+            <h1 className="hoje__titulo">{DIA_LABEL[dia]}</h1>
+            <span className="hoje__titulo-filete" aria-hidden="true" />
+          </div>
         </div>
         <BotaoIcone rotulo="Abrir calendário — escolher outro dia" onClick={() => navigate("/calendario")}>
           <IconeCalendario />
@@ -236,7 +240,7 @@ export function RegistroDoDia({
         <div className="hoje__jornada">
           <div className="hoje__jornada-texto">
             <span className="hoje__jornada-metrica">
-              <b>{seguidas}/{totalRefeicoes}</b> refeições
+              <b>{seguidas}/{totalRefeicoes}</b> refeições seguidas
             </span>
             <span className="hoje__jornada-metrica">
               <b>{kcalRegistradas}</b> / {plano.meta_calorica_diaria} kcal
@@ -258,7 +262,10 @@ export function RegistroDoDia({
       <div className="hoje__grid">
         {/* ─── Coluna principal: Refeições ─── */}
         <main className="hoje__principal">
-          <h2 className="hoje__secao-titulo">Refeições</h2>
+          <h2 className="hoje__secao-titulo">
+            <span>Refeições</span>
+            <span className="hoje__secao-titulo-filete" aria-hidden="true" />
+          </h2>
           {totalRefeicoes === 0 ? (
             <p className="cartao__vazio">Sem refeições definidas para este dia.</p>
           ) : (
