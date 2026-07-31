@@ -1,69 +1,121 @@
-// Perfil — área secundária de configurações. Nesta fase contém só o ponto de
-// entrada para gerar um novo Plano (que arquiva o atual, ADR-0002). Escopo
-// deliberadamente mínimo: nada de features especulativas.
-//
-// "Gerar novo plano" leva ao formulário de onboarding, que se abre em modo
-// "regeneracao" por derivar isso do estado persistido (existe Plano Ativo) —
-// pré-preenchido e com confirmação antes de arquivar. Ver OnboardingPage.
+// Perfil — "página de identidade" do Usuário (refino ADR-0016). De cima para
+// baixo: bloco de identidade (objetivo + medalhão + métricas do Plano Ativo,
+// só LEITURA do que já está persistido), placeholder da Fase 2 (Progresso de
+// peso) e o card de Plano (Gerar novo plano / Ver histórico) já existente —
+// mesma copy e comportamento, só a aparência muda.
 
+import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
+import { usePersistencia } from "@/providers/persistencia-context"
+import { EstadoVazio } from "@/components/EstadoVazio"
+import { formatarISODate } from "@/utils/data"
+import { ID_USUARIO_LOCAL } from "@/features/onboarding/onboarding-core"
+import { OBJETIVO_LABEL, formatarDesde } from "./perfil-core"
+import { ProgressoPesoPlaceholder } from "./ProgressoPesoPlaceholder"
+import type { Usuario, PlanoAtivo } from "@/types"
+import cabecaUrl from "@/assets/escultura-cabeca.webp"
+
+interface EstadoCarregado {
+  usuario: Usuario | null
+  plano: PlanoAtivo | null
+}
+
+function BlocoIdentidade({ usuario, plano }: { usuario: Usuario; plano: PlanoAtivo }) {
+  const hoje = formatarISODate(new Date())
+  return (
+    <section className="perfil__identidade">
+      <div className="perfil__identidade-topo">
+        <div className="perfil__medalhao-wrap">
+          <img className="perfil__medalhao" src={cabecaUrl} alt="" aria-hidden="true" width={64} height={64} />
+        </div>
+        <div>
+          <p className="perfil__objetivo">{OBJETIVO_LABEL[plano.objetivo]}</p>
+          <p className="perfil__desde">{formatarDesde(plano.vigencia.inicio, hoje)}</p>
+        </div>
+      </div>
+
+      <div className="perfil__metricas">
+        <div className="perfil__metrica">
+          <span className="perfil__metrica-valor">
+            {plano.meta_calorica_diaria}
+            <span className="perfil__metrica-unidade"> kcal</span>
+          </span>
+          <span className="perfil__metrica-rotulo">Meta</span>
+        </div>
+        <div className="perfil__metrica">
+          <span className="perfil__metrica-valor">
+            {usuario.peso_kg}
+            <span className="perfil__metrica-unidade"> kg</span>
+          </span>
+          <span className="perfil__metrica-rotulo">Peso</span>
+        </div>
+        <div className="perfil__metrica">
+          <span className="perfil__metrica-valor">
+            {usuario.altura_cm}
+            <span className="perfil__metrica-unidade"> cm</span>
+          </span>
+          <span className="perfil__metrica-rotulo">Altura</span>
+        </div>
+      </div>
+    </section>
+  )
+}
 
 export function PerfilPage() {
   const navigate = useNavigate()
+  const persistencia = usePersistencia()
+
+  const [carregando, setCarregando] = useState(true)
+  const [estado, setEstado] = useState<EstadoCarregado | null>(null)
+
+  useEffect(() => {
+    let ativo = true
+    async function carregar() {
+      const [usuario, plano] = await Promise.all([
+        persistencia.usuarios.buscar(ID_USUARIO_LOCAL),
+        persistencia.planos.buscarAtivo(ID_USUARIO_LOCAL),
+      ])
+      if (!ativo) return
+      setEstado({ usuario, plano })
+      setCarregando(false)
+    }
+    void carregar()
+    return () => {
+      ativo = false
+    }
+  }, [persistencia])
+
+  if (carregando || !estado) return null
 
   return (
-    <section style={{ paddingTop: "var(--space-5)" }}>
-      <h1
-        style={{
-          fontFamily: "var(--font-display)",
-          fontSize: "26px",
-          fontWeight: 500,
-          color: "var(--text)",
-          marginBottom: "var(--space-5)",
-        }}
-      >
-        Perfil
+    <section className="perfil">
+      <h1 className="perfil__titulo-linha">
+        <span className="perfil__titulo">Perfil</span>
+        <span className="perfil__titulo-filete" aria-hidden="true" />
       </h1>
 
-      <div
-        style={{
-          background: "var(--bg-elevated)",
-          border: "1px solid var(--border-hairline)",
-          borderRadius: "var(--radius-lg)",
-          padding: "var(--space-5)",
-        }}
-      >
-        <h2
-          style={{
-            fontSize: "16px",
-            fontWeight: "var(--font-weight-emphasis)",
-            color: "var(--text)",
-            marginBottom: "var(--space-2)",
-          }}
-        >
-          Plano
-        </h2>
-        <p style={{ color: "var(--text-muted)", fontSize: "14px", marginBottom: "var(--space-5)" }}>
+      {estado.usuario && estado.plano ? (
+        <BlocoIdentidade usuario={estado.usuario} plano={estado.plano} />
+      ) : (
+        <div className="perfil__vazio">
+          <EstadoVazio>
+            <p className="perfil__vazio-titulo">Nenhum plano ativo.</p>
+            <p className="perfil__vazio-texto">
+              Gere um plano para ver seu objetivo, suas metas e seu progresso aqui.
+            </p>
+          </EstadoVazio>
+        </div>
+      )}
+
+      <ProgressoPesoPlaceholder />
+
+      <section className="perfil__card">
+        <h2 className="perfil__card-titulo">Plano</h2>
+        <p className="perfil__card-texto">
           Gerar um novo plano arquiva o atual. Planos não são editados — mudou a
           biometria ou o objetivo, gera-se um novo.
         </p>
-        <button
-          type="button"
-          onClick={() => navigate("/onboarding")}
-          style={{
-            width: "100%",
-            minHeight: "var(--touch-target-min)",
-            padding: "var(--space-3) var(--space-4)",
-            background: "var(--accent)",
-            color: "var(--on-accent)",
-            border: "none",
-            borderRadius: "var(--radius-sm)",
-            fontFamily: "var(--font-body)",
-            fontWeight: "var(--font-weight-emphasis)",
-            fontSize: "15px",
-            cursor: "pointer",
-          }}
-        >
+        <button type="button" className="perfil__cta" onClick={() => navigate("/onboarding")}>
           Gerar novo plano
         </button>
 
@@ -71,24 +123,12 @@ export function PerfilPage() {
             fica com o CTA primário. Planos arquivados e seus Registros vivem aqui. */}
         <button
           type="button"
+          className="perfil__cta-secundaria"
           onClick={() => navigate("/historico")}
-          style={{
-            width: "100%",
-            minHeight: "var(--touch-target-min)",
-            marginTop: "var(--space-3)",
-            padding: "var(--space-3) var(--space-4)",
-            background: "transparent",
-            color: "var(--text)",
-            border: "1px solid var(--border-hairline)",
-            borderRadius: "var(--radius-sm)",
-            fontFamily: "var(--font-body)",
-            fontSize: "15px",
-            cursor: "pointer",
-          }}
         >
           Ver histórico de planos
         </button>
-      </div>
+      </section>
     </section>
   )
 }

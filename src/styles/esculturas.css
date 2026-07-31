@@ -150,3 +150,23 @@
   opacity: 0.06;
   mix-blend-mode: screen;
 }
+
+/* ─── Medalhão do Perfil ─────────────────────────────────────────────────────
+   Mesma escultura da splash (escultura-cabeca.webp), recortada em círculo
+   pequeno (layout em src/styles/perfil.css) — precisa de mais contraste que
+   os outros dois usos para não borrar em ~64px. Único uso de imagem com anel
+   de OURO PLENO (não ambiente): marca o estado atual, como o "is-hoje" do
+   calendário (brand §4.3). */
+.perfil__medalhao {
+  filter: grayscale(1) contrast(1.6) brightness(1) saturate(0);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .perfil__medalhao {
+    filter: grayscale(1) contrast(1.9) brightness(0.9);
+  }
+}
+
+:root[data-theme='dark'] .perfil__medalhao {
+  filter: grayscale(1) contrast(1.9) brightness(0.9);
+}
