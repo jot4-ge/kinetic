@@ -4,6 +4,7 @@ import type {
   PlanoRepositorio,
   ExercicioRepositorio,
   RegistroRepositorio,
+  PesoRepositorio,
 } from "../contratos"
 import type {
   UsuarioId, PlanoId, ExercicioId, RegistroId,
@@ -16,6 +17,7 @@ import {
   planoAtivoSchema,
   parseExercicio,
   parseRegistroDeAderencia,
+  parseRegistroDePeso,
 } from "@/types"
 import { arquivarPlano } from "@/dominio/plano"
 import type { RotinaIDB } from "./db"
@@ -144,11 +146,61 @@ function makeRegistros(db: RotinaIDB): RegistroRepositorio {
   }
 }
 
+function makePesos(db: RotinaIDB): PesoRepositorio {
+  return {
+    // ADR-0018: garantia estrutural de "no máximo um por dia" — o upsert
+    // acontece aqui, não no chamador. Lê o índice DENTRO da mesma transação
+    // readwrite da escrita (mesmo princípio de PlanoRepositorio.arquivarEAtivar),
+    // então a decisão create-vs-update usa o estado corrente do store, não um
+    // snapshot anterior. Se já existe um registro para (usuario_id, data),
+    // reaproveita seu id e criado_em; peso_kg e editado_em vêm do `registro` recebido.
+    async salvar(registro) {
+      const tx = db.transaction("registros_peso", "readwrite")
+      const raw = await tx.store
+        .index("por_usuario_e_data")
+        .get([registro.usuario_id, registro.data])
+
+      if (raw) {
+        const existente = parseRegistroDePeso(raw)
+        await tx.store.put({
+          ...existente,
+          peso_kg: registro.peso_kg,
+          editado_em: registro.editado_em,
+        })
+      } else {
+        await tx.store.put(registro)
+      }
+      await tx.done
+    },
+
+    async buscarPorData(usuarioId, data) {
+      const raw = await db.getFromIndex("registros_peso", "por_usuario_e_data", [usuarioId, data])
+      return raw ? parseRegistroDePeso(raw) : null
+    },
+
+    async listarPorPeriodo(usuarioId, de, ate) {
+      const range = IDBKeyRange.bound([usuarioId, de], [usuarioId, ate])
+      const raws = await db.getAllFromIndex("registros_peso", "por_usuario_e_data", range)
+      return raws.map(parseRegistroDePeso)
+    },
+
+    // Índice composto [usuario_id, data] retorna em ordem ascendente por data;
+    // o mais recente é o último elemento do range do próprio usuário.
+    async buscarMaisRecente(usuarioId) {
+      const range = IDBKeyRange.bound([usuarioId, ""], [usuarioId, "￿"])
+      const raws = await db.getAllFromIndex("registros_peso", "por_usuario_e_data", range)
+      if (raws.length === 0) return null
+      return parseRegistroDePeso(raws[raws.length - 1])
+    },
+  }
+}
+
 export function createIdbAdapter(db: RotinaIDB): CamadaDePersistencia {
   return {
     usuarios:   makeUsuarios(db),
     planos:     makePlanos(db),
     exercicios: makeExercicios(db),
     registros:  makeRegistros(db),
+    pesos:      makePesos(db),
   }
 }

@@ -16,7 +16,7 @@
 import type {
   UsuarioId, PlanoId, ExercicioId, RegistroId,
   ISODate,
-  Usuario, Plano, PlanoAtivo, Exercicio, RegistroDeAderencia,
+  Usuario, Plano, PlanoAtivo, Exercicio, RegistroDeAderencia, RegistroDePeso,
 } from "@/types"
 
 // ─── UsuarioRepositorio ────────────────────────────────────────────────────
@@ -77,6 +77,27 @@ export interface RegistroRepositorio {
   listarPorPlano(planoId: PlanoId): Promise<RegistroDeAderencia[]>
 }
 
+// ─── PesoRepositorio ───────────────────────────────────────────────────────
+// ADR-0018: "no máximo um por dia" é uma invariante de integridade, não uma
+// convenção de uso — por isso `salvar` faz o upsert-por-data INTERNAMENTE
+// (via índice, em transação, como PlanoRepositorio.arquivarEAtivar), em vez
+// de confiar que todo chamador vai reaproveitar o id de um registro existente
+// (o padrão do RegistroRepositorio acima, que é uma fragilidade aceita ali,
+// não um modelo a repetir aqui). Se já existe um registro para
+// (usuario_id, data), o adapter reaproveita o id e o criado_em existentes e
+// aplica peso_kg/editado_em do registro recebido; caso contrário, insere.
+//
+// SEM delete — RegistroDePeso é editável mas nunca apagável (ADR-0018): a
+// série temporal de peso protege contra autoengano, e escondida por deleção
+// deixaria de proteger.
+
+export interface PesoRepositorio {
+  salvar(registro: RegistroDePeso): Promise<void>
+  buscarPorData(usuarioId: UsuarioId, data: ISODate): Promise<RegistroDePeso | null>
+  listarPorPeriodo(usuarioId: UsuarioId, de: ISODate, ate: ISODate): Promise<RegistroDePeso[]>
+  buscarMaisRecente(usuarioId: UsuarioId): Promise<RegistroDePeso | null>
+}
+
 // ─── CamadaDePersistencia — unified seam ──────────────────────────────────
 // The single value the rest of the app receives (via React context or DI).
 // Camada 1: IdbAdapter (src/persistencia/idb/index.ts) — TODO
@@ -87,4 +108,5 @@ export interface CamadaDePersistencia {
   readonly planos:     PlanoRepositorio
   readonly exercicios: ExercicioRepositorio
   readonly registros:  RegistroRepositorio
+  readonly pesos:      PesoRepositorio
 }
