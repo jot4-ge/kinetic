@@ -1,0 +1,59 @@
+/* Toast de atualização do Service Worker — chrome global, como o header
+   (brand §3.1: aviso curto, sem exclamação, ação no imperativo direto). */
+
+.atualizacao-pwa {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--space-5) + var(--safe-bottom));
+  transform: translateX(-50%);
+  width: calc(100% - var(--space-5) * 2);
+  max-width: 440px;
+  z-index: 100;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-4);
+  padding: var(--space-4);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-lg);
+}
+
+.atualizacao-pwa__texto {
+  color: var(--text);
+  font-size: 14px;
+  margin: 0;
+}
+
+.atualizacao-pwa__acoes {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: none;
+  margin-left: auto;
+}
+
+.atualizacao-pwa__atualizar {
+  min-height: var(--touch-target-min);
+  padding: var(--space-2) var(--space-4);
+  background: var(--accent);
+  color: var(--on-accent);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-weight: var(--font-weight-emphasis);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.atualizacao-pwa__depois {
+  min-height: var(--touch-target-min);
+  padding: var(--space-2) var(--space-3);
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: 14px;
+  cursor: pointer;
+}
