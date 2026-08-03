@@ -21,3 +21,18 @@ imagens não são pré-processadas de forma destrutiva.
 
 CC0 dispensa atribuição; o registro acima é boa prática e evita dúvida futura
 sobre a origem dos arquivos.
+
+## Fontes
+
+`fonts/cinzel-variable-latin.woff2` e `fonts/inter-variable-latin.woff2` são
+os arquivos variáveis (subset **latin** — cobre pt-BR integralmente) de
+**Cinzel** e **Inter**, baixados do Google Fonts e auto-hospedados para o app
+funcionar 100% offline (PWA — nenhuma dependência de rede além da primeira
+carga). Um único arquivo por família cobre todos os pesos usados (400–600 em
+Cinzel, 400–500 em Inter): `@font-face` em `src/styles/theme.css` fixa cada
+peso via `font-weight` como faixa, a mesma técnica que o próprio Google Fonts
+usa para servir essas famílias.
+
+- **Licença:** SIL Open Font License 1.1 (<https://openfontlicense.org/>)
+- **Cinzel:** Natanael Gama (<https://fonts.google.com/specimen/Cinzel>)
+- **Inter:** Rasmus Andersson (<https://fonts.google.com/specimen/Inter>)
