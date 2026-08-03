@@ -4,6 +4,7 @@
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom"
 import { ThemeToggle } from "@/components/ThemeToggle"
 import { BotaoIcone } from "@/components/BotaoIcone"
+import { AtualizacaoPWA } from "@/components/AtualizacaoPWA"
 import { OnboardingPage } from "@/features/onboarding/OnboardingPage"
 import { RotaRaiz } from "@/features/onboarding/RotaRaiz"
 import { HojePage } from "@/features/hoje/HojePage"
@@ -97,6 +98,7 @@ function Shell({ children }: { children: React.ReactNode }) {
         </div>
       </header>
       {children}
+      <AtualizacaoPWA />
     </div>
   )
 }

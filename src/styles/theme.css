@@ -4,7 +4,28 @@
    valores aqui.
    ─────────────────────────────────────────────────────────────────────────── */
 
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Inter:wght@400;500&display=swap');
+/* Cinzel/Inter auto-hospedadas (PWA offline-first: nada de dependência de
+   rede além da primeira carga — ver src/assets/fonts/, CREDITS.md). Fontes
+   variáveis: um único arquivo por família cobre todos os pesos usados; cada
+   @font-face abaixo só fixa qual instância do eixo de peso essa regra
+   representa (mesma técnica que a própria Google Fonts usa para servir
+   Cinzel/Inter). Subset latin (U+0000–00FF + pontuação) cobre pt-BR
+   integralmente — sem latin-ext, que é para outros idiomas. */
+@font-face {
+  font-family: 'Cinzel';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url('../assets/fonts/cinzel-variable-latin.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 500;
+  font-display: swap;
+  src: url('../assets/fonts/inter-variable-latin.woff2') format('woff2');
+}
 
 /* ─── Tokens independentes de tema ───────────────────────────────────────── */
 

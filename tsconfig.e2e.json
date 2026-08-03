@@ -24,5 +24,9 @@
     /* Path aliases — o harness consome os módulos reais de src. */
     "paths": { "@/*": ["./src/*"] }
   },
-  "include": ["e2e", "playwright.config.ts"]
+  // src/vite-env.d.ts explícito (não "src" inteiro): o harness importa App.tsx
+  // via @/, que agora traz a declaração ambiente de virtual:pwa-register/react
+  // — sem isto, esse projeto não a enxerga (ambient .d.ts não entra junto por
+  // import transitivo, só por include).
+  "include": ["e2e", "playwright.config.ts", "src/vite-env.d.ts"]
 }

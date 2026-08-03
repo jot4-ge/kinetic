@@ -1,9 +1,17 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <!-- viewport-fit=cover: sem isto, env(safe-area-inset-*) (theme.css,
+         --safe-bottom) sempre resolve a 0px — o conteúdo nunca chega a
+         cobrir a área do notch/home-indicator para o SO reportar a inset. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- Cor da barra do sistema/splash nativa. Valor inicial = negro (padrão
+         antes do JS rodar); useTheme.ts mantém isto sincronizado com o tema
+         em uso (sistema/claro/escuro) depois que a app monta. -->
+    <meta name="theme-color" content="#0A0806" />
     <title>Kinetic</title>
   </head>
   <body>
