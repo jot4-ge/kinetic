@@ -34,7 +34,7 @@ function somarDias(iso: ISODate, dias: number): ISODate {
 
 // ─── Planos ─────────────────────────────────────────────────────────────────
 
-function gerarPlanoAtivo(entrada: EntradaCalculo, id: string, inicio: ISODate): PlanoAtivo {
+function gerarPlanoAtivo(entrada: EntradaCalculo & { nome: string }, id: string, inicio: ISODate): PlanoAtivo {
   const { plano } = construirUsuarioEPlano(entrada, {
     gerarId: () => id,
     // criado_em cravado ao meio-dia local do dia de início: é a chave de
@@ -178,15 +178,20 @@ const ERA_1_INICIO = "2026-03-02" as ISODate
 const ERA_2_INICIO = "2026-05-11" as ISODate
 const ERA_3_INICIO = "2026-07-06" as ISODate
 
-const entradaCutting: EntradaCalculo = {
+// nome não importa aqui: gerarPlanoAtivo só extrai o Plano — o Usuario da
+// fixture (com o nome de verdade) é construído à parte, abaixo.
+const entradaCutting: EntradaCalculo & { nome: string } = {
+  nome: "Fixture",
   peso_kg: 84, altura_cm: 178, idade: 28, sexo: "M",
   fator_atividade: "ModeramenteAtivo", objetivo: "Cutting",
 }
-const entradaRecomposicao: EntradaCalculo = {
+const entradaRecomposicao: EntradaCalculo & { nome: string } = {
+  nome: "Fixture",
   peso_kg: 79, altura_cm: 178, idade: 28, sexo: "M",
   fator_atividade: "MuitoAtivo", objetivo: "Recomposicao",
 }
-const entradaBulk: EntradaCalculo = {
+const entradaBulk: EntradaCalculo & { nome: string } = {
+  nome: "Fixture",
   peso_kg: 76, altura_cm: 178, idade: 28, sexo: "M",
   fator_atividade: "MuitoAtivo", objetivo: "Bulk",
 }
@@ -212,7 +217,7 @@ export function montarSemente(cenarioPesos?: CenarioPesos): DadosSemente {
 
   const usuario: Usuario = {
     id: ID_USUARIO_LOCAL,
-    nome: "Você",
+    nome: "Marina",
     email: "usuario@exemplo.invalid",
     peso_kg: 76,
     altura_cm: 178,

@@ -28,6 +28,7 @@ function BlocoIdentidade({ usuario, plano }: { usuario: Usuario; plano: PlanoAti
           <img className="perfil__medalhao" src={cabecaUrl} alt="" aria-hidden="true" width={64} height={64} />
         </div>
         <div>
+          <p className="perfil__nome">{usuario.nome}</p>
           <p className="perfil__objetivo">{OBJETIVO_LABEL[plano.objetivo]}</p>
           <p className="perfil__desde">{formatarDesde(plano.vigencia.inicio, hoje)}</p>
         </div>

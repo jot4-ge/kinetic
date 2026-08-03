@@ -16,6 +16,7 @@ interface EstadoCarregado {
   plano: PlanoAtivo
   data: ISODate
   registro: RegistroDeAderencia | null
+  nomeUsuario: string | null
 }
 
 export function HojePage() {
@@ -36,10 +37,13 @@ export function HojePage() {
         return
       }
       const data = formatarISODate(new Date())
-      const registro = await persistencia.registros.buscarPorData(ID_USUARIO_LOCAL, data)
+      const [registro, usuario] = await Promise.all([
+        persistencia.registros.buscarPorData(ID_USUARIO_LOCAL, data),
+        persistencia.usuarios.buscar(ID_USUARIO_LOCAL),
+      ])
       if (!ativo) return
 
-      setEstado({ plano, data, registro })
+      setEstado({ plano, data, registro, nomeUsuario: usuario?.nome ?? null })
       setCarregando(false)
     }
     void carregar()
@@ -53,6 +57,11 @@ export function HojePage() {
   if (!estado) return null
 
   return (
-    <RegistroDoDia data={estado.data} plano={estado.plano} registroExistente={estado.registro} />
+    <RegistroDoDia
+      data={estado.data}
+      plano={estado.plano}
+      registroExistente={estado.registro}
+      nomeUsuario={estado.nomeUsuario}
+    />
   )
 }

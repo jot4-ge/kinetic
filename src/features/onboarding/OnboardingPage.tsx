@@ -21,6 +21,7 @@ import {
   formularioDeUsuario,
   FORMULARIO_VAZIO,
   ID_USUARIO_LOCAL,
+  NOME_TAMANHO_MAXIMO,
   type FormularioBruto,
   type ErrosValidacao,
   type ModoFormulario,
@@ -318,6 +319,17 @@ export function OnboardingPage() {
           padding: "var(--space-5)",
         }}
       >
+        <Campo id="nome" rotulo="Nome" erro={erros.nome}>
+          <input
+            {...props("nome")}
+            type="text"
+            autoComplete="name"
+            required
+            maxLength={NOME_TAMANHO_MAXIMO}
+            onChange={(e) => atualizar("nome", e.target.value)}
+          />
+        </Campo>
+
         <Campo id="sexo" rotulo="Sexo" erro={erros.sexo}>
           <select
             {...props("sexo")}
