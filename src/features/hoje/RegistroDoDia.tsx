@@ -32,6 +32,7 @@ import {
   definirChecklistItem,
   carimbarEdicao,
   formatarRepeticao,
+  saudacaoDoDia,
 } from "./hoje-core"
 
 const DIA_LABEL: Record<DiaDaSemana, string> = {
@@ -137,10 +138,14 @@ export function RegistroDoDia({
   data,
   plano,
   registroExistente,
+  nomeUsuario = null,
 }: {
   data: ISODate
   plano: Plano
   registroExistente: RegistroDeAderencia | null
+  // Só usado quando ehHoje (HojePage); DiaPage não precisa passar — dias
+  // passados sempre mostram a data, nunca a saudação.
+  nomeUsuario?: string | null
 }) {
   const persistencia = usePersistencia()
   const navigate = useNavigate()
@@ -205,6 +210,7 @@ export function RegistroDoDia({
   const horaAtual = ehHoje
     ? `${String(agora.getHours()).padStart(2, "0")}:${String(agora.getMinutes()).padStart(2, "0")}`
     : null
+  const saudacao = ehHoje && nomeUsuario ? saudacaoDoDia(nomeUsuario, agora.getHours()) : null
 
   const refeicoes = perfil?.refeicoes ?? []
   const totalRefeicoes = refeicoes.length
@@ -222,7 +228,7 @@ export function RegistroDoDia({
     <div className="hoje">
       <header className="hoje__cabecalho">
         <div className="hoje__titulo-bloco">
-          <p className="hoje__data">{ehHoje ? "Hoje" : formatarDataCurta(data)}</p>
+          <p className="hoje__data">{saudacao ?? (ehHoje ? "Hoje" : formatarDataCurta(data))}</p>
           <div className="hoje__titulo-linha">
             <h1 className="hoje__titulo">{DIA_LABEL[dia]}</h1>
             <span className="hoje__titulo-filete" aria-hidden="true" />

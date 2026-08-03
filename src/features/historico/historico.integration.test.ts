@@ -32,11 +32,13 @@ async function freshAdapter(): Promise<CamadaDePersistencia> {
   return createIdbAdapter(db)
 }
 
-const entradaCutting: EntradaCalculo = {
+const entradaCutting: EntradaCalculo & { nome: string } = {
+  nome: "Fixture",
   peso_kg: 80, altura_cm: 178, idade: 28, sexo: "M",
   fator_atividade: "MuitoAtivo", objetivo: "Cutting",
 }
-const entradaManutencao: EntradaCalculo = {
+const entradaManutencao: EntradaCalculo & { nome: string } = {
+  nome: "Fixture",
   peso_kg: 76, altura_cm: 178, idade: 28, sexo: "M",
   fator_atividade: "MuitoAtivo", objetivo: "Manutencao",
 }
@@ -45,7 +47,7 @@ const entradaManutencao: EntradaCalculo = {
 // atualiza o ponteiro. Devolve o Plano gerado para uso no teste.
 async function gerar(
   adapter: CamadaDePersistencia,
-  entrada: EntradaCalculo,
+  entrada: EntradaCalculo & { nome: string },
   planoId: string,
   inicio: string,
 ): Promise<Plano> {

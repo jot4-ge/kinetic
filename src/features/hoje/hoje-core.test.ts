@@ -9,6 +9,7 @@ import {
   definirChecklistItem,
   carimbarEdicao,
   formatarRepeticao,
+  saudacaoDoDia,
   type ContextoRegistro,
 } from "./hoje-core"
 import { parseRegistroDeAderencia } from "@/types"
@@ -150,6 +151,25 @@ describe("formatarRepeticao (ADR-0009)", () => {
     expect(formatarRepeticao({ tipo: "Falha" })).toBe("até a falha")
     expect(formatarRepeticao({ tipo: "Tempo", min: 30, max: 45 })).toBe("30–45s")
     expect(formatarRepeticao({ tipo: "Piramide", sequencia: [7, 7, 7] })).toBe("7→7→7")
+  })
+})
+
+describe("saudacaoDoDia (ADR-0019)", () => {
+  it("bom dia entre 05h e 11h59", () => {
+    expect(saudacaoDoDia("Ana", 5)).toBe("Bom dia, Ana")
+    expect(saudacaoDoDia("Ana", 11)).toBe("Bom dia, Ana")
+  })
+
+  it("boa tarde entre 12h e 17h59", () => {
+    expect(saudacaoDoDia("Ana", 12)).toBe("Boa tarde, Ana")
+    expect(saudacaoDoDia("Ana", 17)).toBe("Boa tarde, Ana")
+  })
+
+  it("boa noite entre 18h e 04h59", () => {
+    expect(saudacaoDoDia("Ana", 18)).toBe("Boa noite, Ana")
+    expect(saudacaoDoDia("Ana", 23)).toBe("Boa noite, Ana")
+    expect(saudacaoDoDia("Ana", 0)).toBe("Boa noite, Ana")
+    expect(saudacaoDoDia("Ana", 4)).toBe("Boa noite, Ana")
   })
 })
 

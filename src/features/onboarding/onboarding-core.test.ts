@@ -7,6 +7,7 @@ import {
   FORMULARIO_VAZIO,
   ID_USUARIO_LOCAL,
   FAIXA_PESO_KG,
+  NOME_TAMANHO_MAXIMO,
   type FormularioBruto,
   type DepsConstrucao,
 } from "./onboarding-core"
@@ -16,6 +17,7 @@ import type { Usuario, PlanoId, ISOTimestamp } from "@/types"
 
 // Formulário válido de referência — cada teste altera só o campo em foco.
 const formValido: FormularioBruto = {
+  nome: "João",
   peso_kg: "80",
   altura_cm: "178",
   idade: "28",
@@ -30,6 +32,7 @@ describe("validarFormulario", () => {
     expect(r.ok).toBe(true)
     if (!r.ok) return
     expect(r.valor).toEqual({
+      nome: "João",
       peso_kg: 80,
       altura_cm: 178,
       idade: 28,
@@ -50,8 +53,29 @@ describe("validarFormulario", () => {
     expect(r.ok).toBe(false)
     if (r.ok) return
     expect(Object.keys(r.erros).sort()).toEqual(
-      ["altura_cm", "fator_atividade", "idade", "objetivo", "peso_kg", "sexo"].sort(),
+      ["altura_cm", "fator_atividade", "idade", "nome", "objetivo", "peso_kg", "sexo"].sort(),
     )
+  })
+
+  it("rejeita nome vazio ou só espaços", () => {
+    const vazio = validarFormulario({ ...formValido, nome: "" })
+    const espacos = validarFormulario({ ...formValido, nome: "   " })
+    if (vazio.ok) throw new Error("esperava erro")
+    if (espacos.ok) throw new Error("esperava erro")
+    expect(vazio.erros.nome).toBeDefined()
+    expect(espacos.erros.nome).toBeDefined()
+  })
+
+  it("aceita nome com espaços nas bordas e faz trim", () => {
+    const r = validarFormulario({ ...formValido, nome: "  Maria  " })
+    expect(r.ok).toBe(true)
+    if (r.ok) expect(r.valor.nome).toBe("Maria")
+  })
+
+  it("rejeita nome acima do tamanho máximo", () => {
+    const r = validarFormulario({ ...formValido, nome: "a".repeat(NOME_TAMANHO_MAXIMO + 1) })
+    expect(r.ok).toBe(false)
+    if (!r.ok) expect(r.erros.nome).toBeDefined()
   })
 
   it("mensagem de campo vazio é direta e sem pontuação exclamativa (tom brand)", () => {
@@ -127,7 +151,7 @@ describe("resolverModo", () => {
 describe("formularioDeUsuario", () => {
   const usuario: Usuario = {
     id: ID_USUARIO_LOCAL,
-    nome: "Você",
+    nome: "Maria",
     email: "usuario@exemplo.invalid",
     peso_kg: 82.5,
     altura_cm: 178,
@@ -141,6 +165,7 @@ describe("formularioDeUsuario", () => {
 
   it("pré-preenche todos os campos do formulário a partir do Usuario", () => {
     expect(formularioDeUsuario(usuario)).toEqual({
+      nome: "Maria",
       peso_kg: "82.5",
       altura_cm: "178",
       idade: "28",
@@ -156,6 +181,7 @@ describe("formularioDeUsuario", () => {
     expect(r.ok).toBe(true)
     if (!r.ok) return
     expect(r.valor).toEqual({
+      nome: "Maria",
       peso_kg: 82.5,
       altura_cm: 178,
       idade: 28,
@@ -167,7 +193,8 @@ describe("formularioDeUsuario", () => {
 })
 
 describe("construirUsuarioEPlano", () => {
-  const entrada: EntradaCalculo = {
+  const entrada: EntradaCalculo & { nome: string } = {
+    nome: "João",
     peso_kg: 80,
     altura_cm: 178,
     idade: 28,
@@ -192,6 +219,11 @@ describe("construirUsuarioEPlano", () => {
     const { plano } = construirUsuarioEPlano(entrada, deps)
     expect(plano.usuario_id).toBe(ID_USUARIO_LOCAL)
     expect(plano.autor_id).toBe(ID_USUARIO_LOCAL)
+  })
+
+  it("usa o nome informado no Usuario, não um placeholder (ADR-0019)", () => {
+    const { usuario } = construirUsuarioEPlano(entrada, deps)
+    expect(usuario.nome).toBe("João")
   })
 
   it("liga o plano_ativo_id do Usuario ao Plano gerado", () => {

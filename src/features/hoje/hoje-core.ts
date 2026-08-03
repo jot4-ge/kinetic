@@ -136,6 +136,16 @@ export function carimbarEdicao(
   return { ...registro, editado_em: agora().toISOString() as ISOTimestamp }
 }
 
+// Saudação personalizada do cabeçalho de "hoje" (ADR-0019). hora é a hora local
+// (0–23) — injetada pelo chamador em vez de ler Date() aqui, para a função
+// permanecer pura e testável. Faixas seguem a convenção pt-BR comum; tom
+// contido, sem exclamação (brand §3.1).
+export function saudacaoDoDia(nome: string, hora: number): string {
+  if (hora >= 5 && hora < 12) return `Bom dia, ${nome}`
+  if (hora >= 12 && hora < 18) return `Boa tarde, ${nome}`
+  return `Boa noite, ${nome}`
+}
+
 // Formata a prescrição de repetições (ADR-0009) para exibição.
 export function formatarRepeticao(rep: Repeticao): string {
   switch (rep.tipo) {

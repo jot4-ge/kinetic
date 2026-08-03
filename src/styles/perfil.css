@@ -102,6 +102,13 @@
   object-position: 50% 28%;
 }
 
+.perfil__nome {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0 0 var(--space-1);
+}
+
 .perfil__objetivo {
   font-family: var(--font-display);
   font-size: 21px;

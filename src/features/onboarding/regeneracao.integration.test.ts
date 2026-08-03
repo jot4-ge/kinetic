@@ -34,11 +34,13 @@ async function freshAdapter(): Promise<CamadaDePersistencia> {
   return createIdbAdapter(db)
 }
 
-const entradaA: EntradaCalculo = {
+const entradaA: EntradaCalculo & { nome: string } = {
+  nome: "Fixture",
   peso_kg: 80, altura_cm: 178, idade: 28, sexo: "M",
   fator_atividade: "MuitoAtivo", objetivo: "Cutting",
 }
-const entradaB: EntradaCalculo = {
+const entradaB: EntradaCalculo & { nome: string } = {
+  nome: "Fixture",
   peso_kg: 76, altura_cm: 178, idade: 28, sexo: "M",
   fator_atividade: "MuitoAtivo", objetivo: "Manutencao",
 }
@@ -47,7 +49,7 @@ const entradaB: EntradaCalculo = {
 // Usuario+Plano, arquiva-e-ativa atomicamente, atualiza o ponteiro do Usuario.
 async function executarGeracao(
   adapter: CamadaDePersistencia,
-  entrada: EntradaCalculo,
+  entrada: EntradaCalculo & { nome: string },
   planoId: string,
   inicio: string,
 ) {
@@ -73,6 +75,7 @@ describe("regeneração de Plano — integração", () => {
     const form = formularioDeUsuario(usuario!)
     // Pré-preenchido com os dados de entradaA — e explicitamente NÃO vazio.
     expect(form).toEqual({
+      nome: "Fixture",
       peso_kg: "80",
       altura_cm: "178",
       idade: "28",

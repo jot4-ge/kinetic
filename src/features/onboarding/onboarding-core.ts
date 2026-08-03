@@ -1,7 +1,7 @@
 // Núcleo puro do Onboarding — sem React, sem persistência, sem DOM.
 //
 // Duas responsabilidades, ambas testáveis isoladamente:
-//   validarFormulario:      strings cruas do formulário → EntradaCalculo | erros
+//   validarFormulario:      strings cruas do formulário → EntradaCalculo + nome | erros
 //   construirUsuarioEPlano: entrada validada + geradores injetados → Usuario + PlanoAtivo
 //
 // O componente (OnboardingPage) só orquestra: chama estas funções e persiste o
@@ -26,17 +26,17 @@ import type { EntradaCalculo } from "@/motor-geracao"
 import { gerarPlano } from "@/motor-geracao"
 import { formatarISODate } from "@/utils/data"
 
-// ─── Identidade na Camada 1 (ADR-0014) ───────────────────────────────────────
+// ─── Identidade na Camada 1 (ADR-0014, ADR-0019) ─────────────────────────────
 // Camada 1 é single-user por design (contratos.ts: UsuarioRepositorio só expõe
 // get-by-id, sem listar). Um id fixo é mais robusto que um id gerado + ponteiro
 // em localStorage: sobrevive à limpeza de storage e sempre é recuperável. A
 // Camada 2 (multi-user, ADR-0004) substitui isto por identidade real.
 export const ID_USUARIO_LOCAL = "usuario-local" as UsuarioId
 
-// nome/email existem no domínio (Usuario) mas não são coletados nesta fase
-// (ADR-0014). Placeholders válidos: .invalid é TLD reservado (RFC 2606) — nunca
-// um endereço real. Substituídos por identidade real na Camada 2.
-const NOME_PLACEHOLDER = "Você"
+// email existe no domínio (Usuario) mas não é coletado (ADR-0014, mantido por
+// ADR-0019): sem uso até a Camada 2 (login/nuvem). Placeholder válido: .invalid
+// é TLD reservado (RFC 2606) — nunca um endereço real. nome, por outro lado,
+// passou a ser coletado no onboarding (ADR-0019) — ver validarNome abaixo.
 const EMAIL_PLACEHOLDER = "usuario@exemplo.invalid"
 
 // ─── Faixas plausíveis (validação de produto, além do positivo do schema) ─────
@@ -44,10 +44,12 @@ const EMAIL_PLACEHOLDER = "usuario@exemplo.invalid"
 export const FAIXA_PESO_KG   = { min: 30, max: 300 } as const
 export const FAIXA_ALTURA_CM = { min: 100, max: 250 } as const
 export const FAIXA_IDADE     = { min: 14, max: 100 } as const
+export const NOME_TAMANHO_MAXIMO = 80
 
 // ─── Formulário ───────────────────────────────────────────────────────────────
 
 export interface FormularioBruto {
+  nome: string
   peso_kg: string
   altura_cm: string
   idade: string
@@ -57,6 +59,7 @@ export interface FormularioBruto {
 }
 
 export const FORMULARIO_VAZIO: FormularioBruto = {
+  nome: "",
   peso_kg: "",
   altura_cm: "",
   idade: "",
@@ -81,6 +84,7 @@ export function resolverModo(usuario: Usuario | null): ModoFormulario {
 // valores das <option>). O inverso de validarFormulario no que toca aos campos.
 export function formularioDeUsuario(usuario: Usuario): FormularioBruto {
   return {
+    nome: usuario.nome,
     peso_kg: String(usuario.peso_kg),
     altura_cm: String(usuario.altura_cm),
     idade: String(usuario.idade),
@@ -91,7 +95,7 @@ export function formularioDeUsuario(usuario: Usuario): FormularioBruto {
 }
 
 export type ResultadoValidacao =
-  | { ok: true; valor: EntradaCalculo }
+  | { ok: true; valor: EntradaCalculo & { nome: string } }
   | { ok: false; erros: ErrosValidacao }
 
 const OBJETIVOS = [
@@ -137,8 +141,22 @@ function validarNumero(
   return { valor: n }
 }
 
+// Nome é a única identificação coletada nesta fase (ADR-0019): trim + não-vazio
+// + limite de tamanho. Tom de voz do brand §3: direto, sem "por favor".
+function validarNome(bruto: string): { valor: string } | { erro: string } {
+  const nome = bruto.trim()
+  if (nome === "") return { erro: "Informe seu nome." }
+  if (nome.length > NOME_TAMANHO_MAXIMO) {
+    return { erro: `Nome muito longo (máx. ${NOME_TAMANHO_MAXIMO} caracteres).` }
+  }
+  return { valor: nome }
+}
+
 export function validarFormulario(form: FormularioBruto): ResultadoValidacao {
   const erros: ErrosValidacao = {}
+
+  const nome = validarNome(form.nome)
+  if ("erro" in nome) erros.nome = nome.erro
 
   const peso = validarNumero(form.peso_kg, "o peso em kg", FAIXA_PESO_KG)
   if ("erro" in peso) erros.peso_kg = peso.erro
@@ -160,6 +178,7 @@ export function validarFormulario(form: FormularioBruto): ResultadoValidacao {
   return {
     ok: true,
     valor: {
+      nome: (nome as { valor: string }).valor,
       peso_kg: (peso as { valor: number }).valor,
       altura_cm: (altura as { valor: number }).valor,
       idade: (idade as { valor: number }).valor,
@@ -178,7 +197,7 @@ export interface DepsConstrucao {
 }
 
 export function construirUsuarioEPlano(
-  entrada: EntradaCalculo,
+  entrada: EntradaCalculo & { nome: string },
   deps: DepsConstrucao,
 ): { usuario: Usuario; plano: PlanoAtivo } {
   const criado_em = deps.agora().toISOString() as ISOTimestamp
@@ -199,7 +218,7 @@ export function construirUsuarioEPlano(
 
   const usuario: Usuario = {
     id: ID_USUARIO_LOCAL,
-    nome: NOME_PLACEHOLDER,
+    nome: entrada.nome,
     email: EMAIL_PLACEHOLDER,
     peso_kg: entrada.peso_kg,
     altura_cm: entrada.altura_cm,
