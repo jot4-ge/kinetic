@@ -196,4 +196,4 @@ demonstração para popular o app sob demanda ao mostrá-lo a outra pessoa.
 
 ## Licença
 
-Licença: a definir.
+Este projeto está sob a licença MIT — ver [LICENSE](LICENSE).
