@@ -7,7 +7,7 @@
 App local-first de rotina — treino, dieta, hidratação e peso — para quem tem
 disciplina mas pouco tempo para organizar tudo em planilhas e apps soltos.
 
-**[Acessar o app]([URL_DO_APP])** · instalável como PWA, funciona offline
+**[Acessar o app](https://kinetic-plum.vercel.app)** · instalável como PWA, funciona offline
 
 ---
 
